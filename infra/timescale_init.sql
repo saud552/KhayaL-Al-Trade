@@ -111,3 +111,17 @@ GROUP BY bucket, symbol;
 -- Compression
 ALTER TABLE market_candles SET (timescaledb.compress, timescaledb.compress_segmentby = 'symbol');
 SELECT add_compression_policy('market_candles', INTERVAL '7 days');
+
+-- 6. Trade Lifecycle Logs
+CREATE TABLE trade_lifecycle_logs (
+    time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    trade_id INTEGER, -- Link to real_trades or paper_trades
+    symbol VARCHAR(20),
+    event VARCHAR(50), -- SIGNAL_RECEIVED, ORDER_PLACED, ORDER_FILLED, TRADE_CLOSED
+    details JSONB
+);
+SELECT create_hypertable('trade_lifecycle_logs', 'time');
+
+-- 7. Commissions and Balances updates
+ALTER TABLE paper_trades ADD COLUMN commission DOUBLE PRECISION DEFAULT 0.0;
+ALTER TABLE real_trades ADD COLUMN commission DOUBLE PRECISION DEFAULT 0.0;
