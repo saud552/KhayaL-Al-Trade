@@ -993,19 +993,20 @@ CREATE TABLE paper_trades (
 
 ---
 
-15. المراجع والمستودعات الموثوقة
+## 15. المراجع والمستودعات الموثوقة
 
-الاسم الرابط الوصف التجربة العملية
-NOFX github.com/zengfield/nofx-dex نظام تشغيل تداول وكيل متكامل أكثر من 9000 نجمة، مستخدم في تداول حقيقي 
-CCXT github.com/ccxt/ccxt مكتبة التداول الموحدة المعيار الفعلي، مستخدم في آلاف المشاريع
-DeepSeek github.com/deepseek-ai نموذج ذكاء اصطناعي قوي مستخدم في NOFX 
-Qwen github.com/QwenLM نموذج متعدد اللغات مستخدم في NOFX 
-Llama github.com/meta-llama نموذج مفتوح من Meta الأكثر شيوعاً للنشر المحلي 
-Mistral github.com/mistralai نماذج كفؤة مستخدم في تطبيقات أوروبية 
-OKX Agent Kit okx.com/help/mcp-agent-kit أدوات تحليل جاهزة إصدار مارس 2026، 83 أداة
-Deriv API developers.deriv.com واجهة Deriv الرسمية وثائق ممتازة، أمثلة متعددة
-SlowMist Security slowmist.com تقارير أمنية كشفت ثغرات NOFX 
-OWASP API Security owasp.org/API-Security أفضل ممارسات الأمان مرجع أساسي للأمان 
+| الاسم | الرابط | الوصف | التجربة العملية |
+| :--- | :--- | :--- | :--- |
+| **NOFX** | [github.com/zengfield/nofx-dex](https://github.com/zengfield/nofx-dex) | نظام تشغيل تداول وكيل متكامل | أكثر من 9000 نجمة، مستخدم في تداول حقيقي [مصدر سابق] |
+| **CCXT** | [github.com/ccxt/ccxt](https://github.com/ccxt/ccxt) | مكتبة التداول الموحدة | المعيار الفعلي، مستخدم في آلاف المشاريع [مصدر سابق] |
+| **DeepSeek** | [github.com/deepseek-ai](https://github.com/deepseek-ai) | نموذج ذكاء اصطناعي قوي | مستخدم في NOFX [مصدر سابق] |
+| **Qwen** | [github.com/QwenLM](https://github.com/QwenLM) | نموذج متعدد اللغات | مستخدم في NOFX [مصدر سابق] |
+| **Llama** | [github.com/meta-llama](https://github.com/meta-llama) | نموذج مفتوح من Meta | الأكثر شيوعاً للنشر المحلي [مصدر سابق] |
+| **Mistral** | [github.com/mistralai](https://github.com/mistralai) | نماذج كفؤة | مستخدم في تطبيقات أوروبية [مصدر سابق] |
+| **OKX Agent Kit** | [okx.com/help/mcp-agent-kit](https://www.okx.com/help/mcp-agent-kit) | أدوات تحليل جاهزة | إصدار مارس 2026، 83 أداة [مصدر سابق] |
+| **Deriv API** | [developers.deriv.com](https://developers.deriv.com) | واجهة Deriv الرسمية | وثائق ممتازة، أمثلة متعددة [مصدر سابق] |
+| **SlowMist Security** | [slowmist.com](https://slowmist.com) | تقارير أمنية | كشفت ثغرات NOFX [مصدر سابق] |
+| **OWASP API Security** | [owasp.org/API-Security](https://owasp.org/API-Security) | أفضل ممارسات الأمان | مرجع أساسي للأمان [مصدر سابق] |
 
 ---
 
