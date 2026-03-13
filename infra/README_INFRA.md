@@ -38,3 +38,14 @@ To ensure high performance and zero data loss, we use a structured Redis Stream 
 
 - **Default Port:** 11434
 - **Usage:** Python agents will call the Ollama API (`http://khaval_ollama:11434`) to process sentiment and reach consensus.
+
+## Debate Visualization Strategy (Sprint 4)
+
+To visualize the 'Debate' in real-time and see which agent is winning the argument:
+
+1. **Structured Traceability**: Each run of the LangGraph orchestrator generates a `final_reasoning` which explicitly cites the winning arguments.
+2. **LangGraph State snapshots**: By integrating **LangSmith** or a local equivalent, we can capture the state at each node (Aggregator -> Debate -> Risk Guard).
+3. **UI Integration**:
+   - The React Frontend (Sprint 6) will consume from `execution:signal:stream`.
+   - The UI will display a **"Consensus Board"** showing each agent's signal (Technical, News, Sentiment) side-by-side with the Judge's final decision.
+   - A **"Reasoning Log"** will provide the natural language justification from the LLM, highlighting the conflicts resolved during the debate.

@@ -1,33 +1,30 @@
 import json
 from openai import AsyncOpenAI
 from agents.orchestrator.state import AgentState
+from agents.orchestrator.prompts import JUDGE_PROMPT_TEMPLATE
 from loguru import logger
 
-# Note: In a real environment, URLs would be in settings
+# Note: In production, these would be loaded from a config service
 LLM_URL = "http://khaval_ollama:11434/v1"
 client = AsyncOpenAI(base_url=LLM_URL, api_key="ollama")
 
-async def consensus_judge_node(state: AgentState):
+async def aggregator_node(state: AgentState):
     """
-    The Qualitative LLM Judge Node.
-    Analyzes the 'Reasoning' from all agents to make a final judgment.
+    Aggregation is handled by the service layer, this node
+    primarily ensures the state is valid for analysis.
     """
-    signals = state["signals"]
-    symbol = state["symbol"]
+    logger.info(f"Aggregating reports for {state['symbol']} at {state['current_price']}")
+    return state
 
-    prompt = f"""
-    Asset: {symbol}
-    Expert Reports:
-    {json.dumps(signals, indent=2)}
-
-    As the Chief Investment Officer, analyze these conflicting reports.
-    Synthesize the information and provide:
-    1. Decision (BUY, SELL, NEUTRAL)
-    2. Combined Confidence Score (0.0 to 1.0)
-    3. Final Consensus Reasoning
-
-    Respond in JSON format only.
+async def debate_node(state: AgentState):
     """
+    The Judge Node: Uses LLM to weigh agent reports.
+    """
+    prompt = JUDGE_PROMPT_TEMPLATE.format(
+        symbol=state["symbol"],
+        current_price=state["current_price"],
+        agent_outputs=json.dumps(state["agent_outputs"], indent=2)
+    )
 
     try:
         response = await client.chat.completions.create(
@@ -35,44 +32,42 @@ async def consensus_judge_node(state: AgentState):
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"}
         )
-        decision_data = json.loads(response.choices[0].message.content)
+        data = json.loads(response.choices[0].message.content)
 
         return {
-            "consensus_decision": decision_data.get("decision", "NEUTRAL"),
-            "confidence_score": decision_data.get("confidence", 0.0),
-            "consensus_reasoning": decision_data.get("reasoning", "No clear consensus reached.")
+            "consensus_signal": data.get("decision", "WAIT"),
+            "confidence_score": data.get("confidence", 0.0),
+            "final_reasoning": data.get("reasoning", "No consensus reached.")
         }
     except Exception as e:
-        logger.error(f"Judge Node Error: {e}")
+        logger.error(f"Debate Node LLM Error: {e}")
         return {
-            "consensus_decision": "NEUTRAL",
+            "consensus_signal": "WAIT",
             "confidence_score": 0.0,
-            "consensus_reasoning": "Error in consensus logic."
+            "final_reasoning": "System error in debate node."
         }
 
-async def risk_gatekeeper_node(state: AgentState):
+async def risk_guard_node(state: AgentState):
     """
-    The Final Gatekeeper Node.
-    Checks hard constraints outside the debate.
+    Final Risk Veto Logic.
     """
-    # Mocking hard risk checks (Real implementation would query DB for daily limits)
-    daily_loss = 50.0 # Mock value
-    max_daily_limit = 100.0
+    signal = state["consensus_signal"]
+    confidence = state["confidence_score"]
 
     veto = False
     reason = "Risk checks passed."
 
-    if daily_loss >= max_daily_limit:
+    # 1. Hard confidence threshold
+    if signal != "WAIT" and confidence < 0.75:
         veto = True
-        reason = "Daily loss limit reached. Trading halted."
+        reason = f"Confidence {confidence} below threshold 0.75."
+        signal = "WAIT"
 
-    # Logic for aborting if consensus is weak
-    if state["confidence_score"] < 0.6:
-        veto = True
-        reason = f"Low consensus confidence: {state['confidence_score']}"
+    # 2. Simulated volatility check (In prod, this would use live volatility indicators)
+    # if volatility > threshold: veto = True
 
     return {
         "risk_veto": veto,
         "risk_reason": reason,
-        "final_action": "ABORT" if veto else "EXECUTE"
+        "consensus_signal": signal # Potential override to WAIT
     }

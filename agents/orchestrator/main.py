@@ -1,6 +1,5 @@
 import asyncio
 import json
-from datetime import datetime, timedelta
 from faststream import FastStream
 from faststream.redis import RedisBroker
 from agents.orchestrator.graph import orchestrator_graph
@@ -9,74 +8,79 @@ from loguru import logger
 broker = RedisBroker("redis://khaval_redis:6379")
 app = FastStream(broker)
 
-# Buffering signals for the aggregation window
-signal_buffer = {} # {symbol: [signals]}
+# Buffering for window-based aggregation
+# {symbol: {"price": float, "outputs": []}}
+signal_buffer = {}
 buffer_locks = {}
 
-async def process_consensus(symbol: str):
+async def execute_graph(symbol: str):
     """
-    Triggers the LangGraph debate for a specific symbol after the aggregation window.
+    Invokes the LangGraph debate and publishes to execution_signal_stream.
     """
-    await asyncio.sleep(1.0) # 1s Aggregation Window
+    await asyncio.sleep(1.0) # 1s window
 
     async with buffer_locks.get(symbol, asyncio.Lock()):
-        signals = signal_buffer.pop(symbol, [])
-        if not signals:
+        data = signal_buffer.pop(symbol, None)
+        if not data or not data["outputs"]:
             return
 
-        logger.info(f"Starting consensus debate for {symbol} with {len(signals)} reports.")
+        logger.info(f"Triggering debate for {symbol}...")
 
-        # Initialize LangGraph State
-        initial_state = {
+        # Initial State
+        state = {
             "symbol": symbol,
-            "signals": signals,
-            "mode": "paper" # Defaulting to paper for now
+            "current_price": data["price"],
+            "agent_outputs": data["outputs"],
+            "mode": "paper" # Defaulting to paper
         }
 
-        # Run the Graph
-        final_state = await orchestrator_graph.ainvoke(initial_state)
+        # Execute Graph
+        result = await orchestrator_graph.ainvoke(state)
 
-        # Post-process final action
-        if final_state["final_action"] == "EXECUTE":
-            logger.info(f"DECISION: {final_state['consensus_decision']} for {symbol}. Pushing to execution.")
-            await broker.publish(
-                {
-                    "symbol": symbol,
-                    "action": final_state["consensus_decision"],
-                    "confidence": final_state["confidence_score"],
-                    "reasoning": final_state["consensus_reasoning"],
-                    "mode": final_state["mode"]
-                },
-                stream="trade:execution:stream"
-            )
-        else:
-            logger.warning(f"ABORTED: {symbol} - {final_state.get('risk_reason', 'Unknown reason')}")
+        # Publish to execution_signal_stream
+        output_payload = {
+            "symbol": symbol,
+            "decision": result["consensus_signal"],
+            "reasoning": result["final_reasoning"],
+            "confidence": result["confidence_score"],
+            "risk_veto": result["risk_veto"],
+            "risk_reason": result["risk_reason"],
+            "mode": result["mode"]
+        }
+
+        await broker.publish(
+            output_payload,
+            stream="execution:signal:stream"
+        )
+        logger.info(f"Consensus reached for {symbol}: {result['consensus_signal']}")
 
 @broker.subscriber("agent:signals:stream")
-async def handle_agent_signal(data):
+async def on_agent_signal(msg):
     """
-    Receives signals from individual agents and buffers them.
+    Collects signals into the buffer.
     """
-    try:
-        # FastStream provides the data directly if it's JSON
-        signal = data
-        symbol = signal.get("symbol")
-        if not symbol: return
+    symbol = msg.get("symbol")
+    if not symbol: return
 
-        if symbol not in buffer_locks:
-            buffer_locks[symbol] = asyncio.Lock()
+    # In a real flow, we'd get the latest price from the state or Redis
+    price = msg.get("indicators", {}).get("price", 0.0)
 
-        async with buffer_locks[symbol]:
-            if symbol not in signal_buffer:
-                signal_buffer[symbol] = []
-                # Start the aggregation timer for this symbol
-                asyncio.create_task(process_consensus(symbol))
+    if symbol not in buffer_locks:
+        buffer_locks[symbol] = asyncio.Lock()
 
-            signal_buffer[symbol].append(signal)
-            logger.debug(f"Buffered {signal['agent']} signal for {symbol}")
+    async with buffer_locks[symbol]:
+        if symbol not in signal_buffer:
+            signal_buffer[symbol] = {"price": price, "outputs": []}
+            asyncio.create_task(execute_graph(symbol))
 
-    except Exception as e:
-        logger.error(f"Orchestrator Error: {e}")
+        signal_buffer[symbol]["outputs"].append({
+            "agent": msg.get("agent"),
+            "symbol": symbol,
+            "signal": msg.get("signal"),
+            "confidence": msg.get("confidence", 0.0),
+            "reasoning": msg.get("reasoning", ""),
+            "timestamp": msg.get("timestamp")
+        })
 
 if __name__ == "__main__":
     asyncio.run(app.run())
