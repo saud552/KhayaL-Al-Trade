@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  timescaledb:
+    image: timescale/timescaledb-ha:pg16
+    container_name: khaval_timescaledb
+    restart: always
+    environment:
+      - POSTGRES_USER=khaval_admin
+      - POSTGRES_PASSWORD=khaval_password # In production, use secret management
+      - POSTGRES_DB=khaval_trade
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescaledb_data:/home/postgres/pgdata
+      - ./infra/timescale_init.sql:/docker-entrypoint-initdb.d/001_init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U khaval_admin -d khaval_trade"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: khaval_redis
+    restart: always
+    command: redis-server --appendonly yes --appendfsync everysec
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: khaval_ollama
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # Note: For GPU support, add the following (requires nvidia-docker2)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+volumes:
+  timescaledb_data:
+  redis_data:
+  ollama_data:
