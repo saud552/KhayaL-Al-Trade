@@ -151,21 +151,21 @@ graph TD
 · تشغيل النماذج المحلية بكفاءة عالية.
 · تقليل زمن الاستجابة (Latency) للتوصيات.
 · تسهيل إدارة إصدارات النماذج المختلفة.
-
-3.4 نماذج الذكاء الاصطناعي (LLMs)
+### 3.4 نماذج الذكاء الاصطناعي (LLMs)
 
 بناءً على تحليل شامل من MAS Markets (نوفمبر 2025)، هذه هي أفضل الخيارات المتاحة مع تقييم دقيق لكل منها:
 
-النموذج الرابط التجربة العملية الأفضل لـ
-DeepSeek github.com/deepseek-ai النموذج الأكثر استخداماً في مشاريع التداول المفتوحة المصدر تحليل فني عام، أداء قوي بتكلفة منخفضة
-Qwen github.com/QwenLM مستخدم بشكل أساسي في NOFX تحليل متعدد اللغات، أسواق آسيوية
-Llama github.com/meta-llama الأكثر شيوعاً للنشر المحلي تحليل بيانات محايد، خصوصية كاملة
-Mistral github.com/mistralai نماذج Mixture-of-Experts كفؤة تطبيقات حساسة للزمن والموارد
-FinGPT github.com/AI4Finance-Foundation/FinGPT نموذج متخصص في التمويل دقة عالية في التحليل المالي
-BloombergGPT (متوفر عبر تراخيص خاصة) نموذج ضخم مدرب على بيانات مالية تحليل تقارير معقدة
-OpenAI GPT-5/o-series platform.openai.com الأفضل في البرمجة والتفكير متعدد الخطوات نمذجة سريعة للاستراتيجيات
-Claude anthropic.com مفضل للوثائق والتحليل طويل السياق توثيق النماذج، تحليل التقارير
-Gemini deepmind.google/technologies/gemini قوي جداً في تحليل المدخلات المتعددة تحليل وثائق PDF، الخطب الاقتصادية
+| النموذج | الرابط | التجربة العملية | الأفضل لـ |
+| :--- | :--- | :--- | :--- |
+| **DeepSeek** | [github.com/deepseek-ai](https://github.com/deepseek-ai) | النموذج الأكثر استخداماً في مشاريع التداول المفتوحة المصدر | تحليل فني عام، أداء قوي بتكلفة منخفضة |
+| **Qwen** | [github.com/QwenLM](https://github.com/QwenLM) | مستخدم بشكل أساسي في NOFX | تحليل متعدد اللغات، أسواق آسيوية |
+| **Llama** | [github.com/meta-llama](https://github.com/meta-llama) | الأكثر شيوعاً للنشر المحلي | تحليل بيانات محايد، خصوصية كاملة |
+| **Mistral** | [github.com/mistralai](https://github.com/mistralai) | نماذج Mixture-of-Experts كفؤة | تطبيقات حساسة للزمن والموارد |
+| **FinGPT** | [github.com/AI4Finance-Foundation/FinGPT](https://github.com/AI4Finance-Foundation/FinGPT) | نموذج متخصص في التمويل | دقة عالية في التحليل المالي |
+| **BloombergGPT** | (متوفر عبر تراخيص خاصة) | نموذج ضخم مدرب على بيانات مالية | تحليل تقارير معقدة |
+| **OpenAI GPT-5/o-series** | [platform.openai.com](https://platform.openai.com) | الأفضل في البرمجة والتفكير متعدد الخطوات | نمذجة سريعة للاستراتيجيات |
+| **Claude** | [anthropic.com](https://www.anthropic.com) | مفضل للوثائق والتحليل طويل السياق | توثيق النماذج، تحليل التقارير |
+| **Gemini** | [deepmind.google/technologies/gemini](https://deepmind.google/technologies/gemini) | قوي جداً في تحليل المدخلات المتعددة | تحليل وثائق PDF، الخطب الاقتصادية |
 
 3.5 OKX Agent Kit
 
