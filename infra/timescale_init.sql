@@ -1,4 +1,4 @@
--- Extension setup (TimescaleDB usually comes with it enabled in the HA image, but good to be explicit)
+-- Extension setup
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 
 -- 1. Market Candles Table (OHLCV)
@@ -10,90 +10,40 @@ CREATE TABLE market_candles (
     low DOUBLE PRECISION NOT NULL,
     close DOUBLE PRECISION NOT NULL,
     volume DOUBLE PRECISION,
-    source VARCHAR(20) -- e.g., 'deriv', 'ccxt'
+    source VARCHAR(20)
 );
 
--- Convert to Hypertable
 SELECT create_hypertable('market_candles', 'time', chunk_time_interval => INTERVAL '1 day');
-
--- Indexing for performance
 CREATE INDEX idx_symbol_time ON market_candles (symbol, time DESC);
 
--- 2. Agent Signals Table
+-- 2. Agent Signals Table (Logs from the individual agents)
 CREATE TABLE agent_signals (
     time TIMESTAMPTZ NOT NULL,
     signal_id UUID DEFAULT gen_random_uuid(),
     symbol VARCHAR(20) NOT NULL,
-    direction VARCHAR(10) NOT NULL, -- CALL, PUT, WAIT
+    agent_name VARCHAR(50),
+    direction VARCHAR(10) NOT NULL,
     confidence DOUBLE PRECISION,
-    consensus_log TEXT,
-    metadata JSONB -- Store agent-specific votes here
+    reasoning TEXT,
+    metadata JSONB
 );
 
--- Convert to Hypertable
 SELECT create_hypertable('agent_signals', 'time', chunk_time_interval => INTERVAL '7 days');
 
--- 3. Continuous Aggregates for Resampling
+-- 3. Consensus Decisions Table (Output from Orchestrator)
+CREATE TABLE consensus_decisions (
+    time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    symbol VARCHAR(20) NOT NULL,
+    decision VARCHAR(10) NOT NULL, -- CALL, PUT, WAIT
+    confidence DOUBLE PRECISION,
+    reasoning TEXT,
+    risk_veto BOOLEAN,
+    risk_reason TEXT
+);
 
--- 1 Minute Candles
-CREATE MATERIALIZED VIEW market_candles_1m
-WITH (timescaledb.continuous = true) AS
-SELECT
-    time_bucket('1 minute', time) AS bucket,
-    symbol,
-    first(open, time) as open,
-    max(high) as high,
-    min(low) as low,
-    last(close, time) as close,
-    sum(volume) as volume
-FROM market_candles
-GROUP BY bucket, symbol;
+SELECT create_hypertable('consensus_decisions', 'time', chunk_time_interval => INTERVAL '7 days');
 
--- 5 Minute Candles
-CREATE MATERIALIZED VIEW market_candles_5m
-WITH (timescaledb.continuous = true) AS
-SELECT
-    time_bucket('5 minutes', time) AS bucket,
-    symbol,
-    first(open, time) as open,
-    max(high) as high,
-    min(low) as low,
-    last(close, time) as close,
-    sum(volume) as volume
-FROM market_candles
-GROUP BY bucket, symbol;
-
--- 1 Hour Candles
-CREATE MATERIALIZED VIEW market_candles_1h
-WITH (timescaledb.continuous = true) AS
-SELECT
-    time_bucket('1 hour', time) AS bucket,
-    symbol,
-    first(open, time) as open,
-    max(high) as high,
-    min(low) as low,
-    last(close, time) as close,
-    sum(volume) as volume
-FROM market_candles
-GROUP BY bucket, symbol;
-
--- Refresh Policies (Ensure data is up to date)
-SELECT add_continuous_aggregate_policy('market_candles_1m',
-    start_offset => INTERVAL '2 minutes',
-    end_offset => INTERVAL '0 seconds',
-    schedule_interval => INTERVAL '1 minute');
-
-SELECT add_continuous_aggregate_policy('market_candles_5m',
-    start_offset => INTERVAL '10 minutes',
-    end_offset => INTERVAL '0 seconds',
-    schedule_interval => INTERVAL '5 minutes');
-
-SELECT add_continuous_aggregate_policy('market_candles_1h',
-    start_offset => INTERVAL '2 hours',
-    end_offset => INTERVAL '0 seconds',
-    schedule_interval => INTERVAL '1 hour');
-
--- 4. Trades Tables (Separation of State)
+-- 4. Trades Tables
 
 -- Real Trades
 CREATE TABLE real_trades (
@@ -119,13 +69,45 @@ CREATE TABLE paper_trades (
     entry_price DOUBLE PRECISION,
     exit_price DOUBLE PRECISION,
     profit DOUBLE PRECISION,
-    status VARCHAR(20) -- OPEN, CLOSED
+    status VARCHAR(20), -- OPEN, CLOSED
+    expiry_time TIMESTAMPTZ
 );
 
--- Optimization: Compression (Save disk space on old data)
-ALTER TABLE market_candles SET (
-    timescaledb.compress,
-    timescaledb.compress_segmentby = 'symbol'
+-- Virtual Wallet
+CREATE TABLE virtual_wallet (
+    id SERIAL PRIMARY KEY,
+    balance DOUBLE PRECISION DEFAULT 10000.0,
+    currency VARCHAR(10) DEFAULT 'USD',
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 5. Continuous Aggregates
+CREATE MATERIALIZED VIEW market_candles_1m
+WITH (timescaledb.continuous = true) AS
+SELECT
+    time_bucket('1 minute', time) AS bucket,
+    symbol,
+    first(open, time) as open,
+    max(high) as high,
+    min(low) as low,
+    last(close, time) as close,
+    sum(volume) as volume
+FROM market_candles
+GROUP BY bucket, symbol;
+
+CREATE MATERIALIZED VIEW market_candles_5m
+WITH (timescaledb.continuous = true) AS
+SELECT
+    time_bucket('5 minutes', time) AS bucket,
+    symbol,
+    first(open, time) as open,
+    max(high) as high,
+    min(low) as low,
+    last(close, time) as close,
+    sum(volume) as volume
+FROM market_candles
+GROUP BY bucket, symbol;
+
+-- Compression
+ALTER TABLE market_candles SET (timescaledb.compress, timescaledb.compress_segmentby = 'symbol');
 SELECT add_compression_policy('market_candles', INTERVAL '7 days');
