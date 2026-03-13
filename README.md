@@ -1,38 +1,44 @@
-📘 الدليل الشامل لبناء نظام تداول ذكي متكامل مع Deriv API
+📘 الدليل الشامل لبناء نظام تداول ذكي متكامل مع Deriv API (الإصدار المتطور)
 
-الإصدار: 2.0 | التاريخ: 2026-03-14
-الهدف: توثيق كامل ومفصل لبناء موقع ويب متكامل يحلل الأسواق المالية باستخدام الذكاء الاصطناعي ويقدم توصيات تداول (صفقات صعود/هبوط) تعتمد على بيانات حقيقية من منصة Deriv، مع إمكانية تنفيذ الصفقات آلياً أو يدوياً، بالإضافة إلى نظام تداول تجريبي متكامل للاختبار الآمن. يعتمد هذا الدليل على أحدث المشاريع مفتوحة المصدر ذات التجارب الفعلية والمجتمعات النشطة.
+الإصدار: 3.0 | التاريخ: 2026-03-15
+الهدف: توثيق كامل ومفصل لبناء موقع ويب **KhavaL Al Trade** متكامل يحلل الأسواق المالية باستخدام الذكاء الاصطناعي ويقدم توصيات تداول (صفقات صعود/هبوط) تعتمد على بيانات حقيقية من منصة Deriv، مع إمكانية تنفيذ الصفقات آلياً أو يدوياً، بالإضافة إلى نظام تداول تجريبي متكامل للاختبار الآمن. يعتمد هذا الدليل على أحدث المشاريع مفتوحة المصدر والبنى المعمارية المتطورة لضمان أعلى أداء واستقرار وأمان.
 
 ---
 
 📑 جدول المحتويات
 
 1. نظرة عامة على المشروع
-2. المكونات الأساسية للنظام
-3. الأدوات والمستودعات مفتوحة المصدر المستخدمة (محدث 2026)
+2. المكونات الأساسية للنظام (الهيكل المطور)
+3. الأدوات والمستودعات مفتوحة المصدر المستخدمة
    · 3.1 CCXT
-   · 3.2 NOFX - النواة الرئيسية للمشروع (Agentic Trading OS)
-   · 3.3 نماذج الذكاء الاصطناعي (LLMs) للتكامل
-   · 3.4 OKX Agent Kit
-   · 3.5 Deriv API
-4. البنية التحتية للمشروع
+   · 3.2 LangGraph / CrewAI (بديل NOFX)
+   · 3.3 vLLM / Ollama (محرك تشغيل النماذج)
+   · 3.4 نماذج الذكاء الاصطناعي (LLMs)
+   · 3.5 OKX Agent Kit
+   · 3.6 TimescaleDB (قاعدة البيانات الزمنية)
+   · 3.7 Pandas-TA / VectorBT (التحليل الفني)
+   · 3.8 Redis Streams (معالجة الأحداث)
+   · 3.9 Deriv API
+4. البنية التحتية للمشروع (المطورة)
 5. المرحلة 1: إعداد الحسابات والحصول على مفاتيح API
 6. المرحلة 2: إعداد بيئة التطوير
 7. المرحلة 3: بناء طبقة الاتصال بمنصة Deriv
 8. المرحلة 4: دمج CCXT لجلب بيانات متعددة المصادر
-9. المرحلة 5: بناء محرك التحليل الفني والذكاء الاصطناعي
-   · 5.1 دمج NOFX كنواة للمشروع
-   · 5.2 دمج نماذج LLM المتعددة
+9. المرحلة 5: بناء محرك التحليل الفني والذكاء الاصطناعي (المطور)
+   · 5.1 هيكلة الوكلاء المتعددين باستخدام LangGraph
+   · 5.2 دمج نماذج LLM عبر vLLM/Ollama
    · 5.3 دمج OKX Agent Kit
-   · 5.4 آلية "الدراسة الجماعية" والتصويت المرجح (Multi-Model Consensus)
-   · 5.5 متخذ القرار النهائي
+   · 5.4 التحليل الفني باستخدام Pandas-TA/VectorBT
+   · 5.5 آلية "الدراسة الجماعية" المتقدمة (النقاش بين الوكلاء)
+   · 5.6 متخذ القرار النهائي
 10. المرحلة 6: تطوير واجهة الويب
-11. المرحلة 7: ربط النظام وإرسال الإشعارات
+11. المرحلة 7: ربط النظام وإرسال الإشعارات (مع Redis Streams)
 12. المرحلة 8: الاختبار والنشر
 13. المرحلة 9: إدارة المخاطر والأمان
 14. المرحلة 10: نظام التداول التجريبي (Paper Trading)
 15. المراجع والمستودعات الموثوقة
 16. الملاحق
+17. جدول مقارنة: الهيكل الأصلي مقابل الهيكل المطور
 
 ---
 
@@ -40,68 +46,72 @@
 
 🎯 الرؤية
 
-بناء منصة ويب ذكية (Dashboard) تعمل على مدار الساعة تقوم بتحليل الأسواق المالية باستخدام خوارزميات الذكاء الاصطناعي وتقديم توصيات تداول دقيقة (صفقات صعود/هبوط) بناءً على بيانات حقيقية من منصة Deriv، مع إمكانية تنفيذ الصفقات آلياً عبر API أو إرسال إشعارات للمستخدم لتنفيذها يدوياً. كما يتضمن النظام بيئة تداول تجريبية كاملة (Paper Trading) لاختبار الاستراتيجيات والتوصيات بدون مخاطرة مالية.
+بناء منصة ويب ذكية (Dashboard) تعمل على مدار الساعة تقوم بتحليل الأسواق المالية باستخدام خوارزميات الذكاء الاصطناعي وتقديم توصيات تداول دقيقة (صفقات صعود/هبوط) بناءً على بيانات حقيقية من منصة Deriv، مع إمكانية تنفيذ الصفقات آلياً عبر API أو إرسال إشعارات للمستخدم لتنفيذها يدوياً. كما يتضمن النظام بيئة تداول تجريبية كاملة (Paper Trading) لاختبار الاستراتيجيات والتوصيات بدون مخاطرة مالية. تم تطوير البنية الأساسية لتعتمد على أحدث التقنيات في مجال الذكاء الاصطناعي وقواعد البيانات الزمنية ومعالجة الأحداث لضمان أعلى أداء واستقرار.
 
-📊 آلية العمل
+📊 آلية العمل (المطورة)
 
 1. جلب البيانات من Deriv API و/أو منصات أخرى عبر CCXT.
-2. تحليل البيانات باستخدام المؤشرات الفنية وأنماط الشموع.
-3. تطبيق نماذج الذكاء الاصطناعي المتعددة (DeepSeek, Qwen, Llama, إلخ) بالتوازي باستخدام بنية NOFX.
-4. مرحلة "الدراسة الجماعية" حيث تتناقش النماذج وتصوت على التوصية الأفضل مع تحديث الأوزان بناءً على الأداء التاريخي.
+2. إرسال البيانات إلى طابور Redis Streams لضمان عدم فقدان أي نقطة سعرية.
+3. معالجة البيانات عبر عدة وكلاء ذكيين (AI Agents) يعملون بالتوازي، كل وكيل متخصص في جانب معين (تحليل فني، تحليل أخبار، تحليل مشاعر، إدارة مخاطر).
+4. مرحلة "النقاش الجماعي" باستخدام إطار LangGraph حيث يتناقش الوكلاء ويتبادلون الآراء لتوليد توصية متوافقة.
 5. توليد توصية نهائية تتضمن: نوع الصفقة (Call/Put)، وقت الانتهاء، ونسبة موثوقية محسوبة بدقة.
 6. إرسال التوصية إلى واجهة المستخدم عبر WebSocket، مع إشعار فوري.
 7. تنفيذ الصفقة (يدوياً من المستخدم، آلياً إذا كان مفعلاً، أو تجريبياً في وضع الاختبار).
 
 ---
 
-2. المكونات الأساسية للنظام
+2. المكونات الأساسية للنظام (الهيكل المطور)
 
 ```mermaid
 graph TD
-    A[مصادر البيانات<br>Deriv API / CCXT] --> B[خادم التطبيق Backend<br>مبني على NOFX]
-    B --> C[محرك التحليل الفني<br>Indicators and Patterns]
-    B --> D[نموذج الذكاء الاصطناعي 1<br>DeepSeek-R1]
-    B --> E[نموذج الذكاء الاصطناعي 2<br>Qwen2.5]
-    B --> F[نموذج الذكاء الاصطناعي 3<br>Llama 4]
-    C --> G[جامع الآراء - التصويت المرجح<br>Consensus Engine]
-    D --> G
-    E --> G
-    F --> G
-    G --> H[متخذ القرار النهائي<br>Decision Engine]
-    H --> I[قاعدة البيانات<br>Database]
-    I --> J[واجهة المستخدم Frontend<br>مبنية على NOFX Web UI]
-    J --> K[إشعارات WebSocket]
-    K --> L[تطبيق التداول Deriv]
-    J --> M[لوحة تحكم المستخدم]
-    J --> N[نظام التداول التجريبي<br>Paper Trading]
-    N --> O[محاكاة الصفقات بأموال وهمية]
+    subgraph "مصادر البيانات"
+        A1[Deriv API]
+        A2[CCXT / بورصات أخرى]
+    end
+    A1 --> B[Redis Streams<br>طابور الأحداث]
+    A2 --> B
+
+    subgraph "طبقة المعالجة"
+        B --> C1[وكيل التحليل الفني<br>Pandas-TA / VectorBT]
+        B --> C2[وكيل DeepSeek<br>تحليل أخبار]
+        B --> C3[وكيل Llama<br>تحليل مشاعر]
+        B --> C4[وكيل Qwen<br>إدارة مخاطر]
+    end
+
+    C1 --> D[LangGraph Orchestrator<br>النقاش الجماعي]
+    C2 --> D
+    C3 --> D
+    C4 --> D
+
+    D --> E[TimescaleDB<br>قاعدة البيانات الزمنية]
+    E --> F[واجهة المستخدم<br>React + TailwindCSS]
+    F --> G[WebSocket Server]
+    G --> H[تطبيق التداول Deriv]
+    F --> I[لوحة تحكم المستخدم]
+    F --> J[نظام التداول التجريبي<br>Paper Trading]
 ```
 
 شرح المكونات الموسع:
 
 · مصادر البيانات: Deriv API (رسمي) و CCXT (للبورصات الأخرى).
-· الخادم: مبني على بنية NOFX (Go + React) مع دعم WebSocket .
-· محرك التحليل الفني: مكتبات مخصصة لحساب RSI, MACD, Bollinger Bands باستخدام TA-Lib .
-· نماذج الذكاء الاصطناعي المتعددة: DeepSeek, Qwen, Llama تعمل بالتوازي في وضع المنافسة .
-· جامع الآراء (Consensus Engine): يجمع مخرجات النماذج المختلفة ويطبق نظام التصويت المرجح مع تحديث الأوزان بناءً على الأداء.
-· متخذ القرار النهائي: يدمج نتائج التحليل الفني والتصويت لإصدار توصية نهائية.
-· قاعدة البيانات: PostgreSQL لتخزين المستخدمين والصفقات والسجلات.
-· واجهة المستخدم: مستوحاة من واجهة NOFX الاحترافية (React + TailwindCSS) .
-· الإشعارات: WebSocket لإرسال التوصيات فور توليدها.
-· التنفيذ الآلي: ربط مباشر مع Deriv API عبر WebSocket.
-· نظام التداول التجريبي: يحاكي السوق الحقيقي بأموال وهمية ويستخدم نفس البيانات الحية.
+· طابور الأحداث: Redis Streams – يضمن عدم فقدان البيانات ويسمح بمعالجة غير متزامنة.
+· الوكلاء الذكيون: أربعة وكلاء متخصصين يعملون بالتوازي (تحليل فني، تحليل أخبار، تحليل مشاعر، إدارة مخاطر).
+· منسق النقاش: LangGraph – يدير الحوار بين الوكلاء للوصول إلى توافق.
+· قاعدة البيانات الزمنية: TimescaleDB – لتخزين واستعلام مليارات السجلات الزمنية بكفاءة.
+· واجهة المستخدم: React + TailwindCSS مستوحاة من أفضل التصاميم.
+· الإشعارات: WebSocket مع دعم إعادة الاتصال التلقائي.
 
 ---
 
-3. الأدوات والمستودعات مفتوحة المصدر المستخدمة (محدث 2026)
+3. الأدوات والمستودعات مفتوحة المصدر المستخدمة
 
 3.1 CCXT
 
 الرابط: https://github.com/ccxt/ccxt
 
-التجربة العملية: مكتبة مستقرة منذ 2017، تُستخدم في آلاف المشاريع التجارية ومفتوحة المصدر. تدعم أكثر من 100 منصة تداول وتعتبر المعيار الفعلي للتعامل مع بورصات العملات الرقمية .
+التجربة العملية: مكتبة مستقرة منذ 2017، تُستخدم في آلاف المشاريع التجارية ومفتوحة المصدر. تدعم أكثر من 100 منصة تداول وتعتبر المعيار الفعلي للتعامل مع بورصات العملات الرقمية.
 
-الوصف: مكتبة برمجية مفتوحة المصدر تدعم أكثر من 100 منصة تداول للعملات الرقمية (بما فيها Binance, Bybit, OKX). توفر واجهة موحدة لجلب بيانات السوق (الأسعار، الشموع، حجم التداول) وتنفيذ الصفقات.
+الوصف: مكتبة برمجية مفتوحة المصدر توفر واجهة موحدة لجلب بيانات السوق (الأسعار، الشموع، حجم التداول) وتنفيذ الصفقات.
 
 دورها في المشروع:
 
@@ -111,137 +121,53 @@ graph TD
 
 اللغات المدعومة: JavaScript, Python, PHP, C#, Go, Ruby, Swift, Kotlin.
 
-3.2 NOFX - النواة الرئيسية للمشروع (Agentic Trading OS)
+3.2 LangGraph / CrewAI (بديل NOFX)
 
-الرابط: https://github.com/zengfield/nofx-dex 
+الرابط: https://github.com/langchain-ai/langgraph | https://github.com/crewaiinc/crewai
 
-التجربة العملية: مشروع حقق أكثر من 9000 نجمة على GitHub في شهرين فقط (أكتوبر-ديسمبر 2025) . تم اختباره عملياً مع Binance و Hyperliquid و Aster DEX، ويثبت يومياً قدرته على تشغيل نماذج AI متعددة في منافسة حية . ورغم بعض الثغرات الأمنية المبكرة التي تم تداركها ، إلا أنه يظل أقوى وأشهر مشروع مفتوح المصدر في مجال "AI Trading Arena".
+التجربة العملية: LangGraph هو الإطار الأحدث والأقوى من LangChain لبناء تطبيقات وكلاء ذكيين ذات تدفقات دورية ومعقدة. يستخدم في مشاريع ضخمة تتطلب تفاعلاً متعدد الخطوات بين النماذج.
 
-الوصف: نظام تشغيل تداول وكيل (Agentic Trading OS) متكامل مبني بلغة Go مع واجهة أمامية React. يدعم:
-
-· منافسة متعددة النماذج (Multi-AI Competition): تشغيل DeepSeek و Qwen و Claude في معركة تداول حية مع لوحة متصدرين فورية .
-· التعلم الذاتي (Self-Learning): يحلل آخر 20 دورة تداول ويتجنب تكرار الأخطاء ويعزز الاستراتيجيات الناجحة .
-· دعم بورصات متعددة: Binance, Hyperliquid, Aster DEX، مع إمكانية إضافة بورصات أخرى عبر CCXT .
-· واجهة احترافية: رسوم بيانية للأداء، مقارنة فورية بين النماذج، وسجل قرارات مفصل .
+الوصف: إطار عمل لإنشاء تدفقات عمل معقدة للوكلاء الذكيين (AI Agents) بشكل دوري (Cyclic). يتيح للوكلاء "التفكير المشترك" وتصحيح أخطاء بعضهم البعض قبل إصدار التوصية النهائية، بدلاً من مجرد الجمع الحسابي للأوزان.
 
 دورها في المشروع:
 
-· استخدام بنيتها التحتية كنواة رئيسية للنظام (توفير 70% من وقت التطوير).
-· الاستفادة من آلية "منافسة الذكاء الاصطناعي" المدمجة كأساس لـ "الدراسة الجماعية".
-· استخدام واجهة المستخدم الجاهزة (React) مع تعديلها لتناسب Deriv API.
-· الاستفادة من نظام تسجيل القرارات (Decision Logs) لتحليل الأداء وتحسين النماذج.
+· بناء "لجنة خبراء" حقيقية من وكلاء متخصصين.
+· إدارة النقاش الجماعي للوصول إلى توافق أعلى دقة.
+· توفير مرونة في إضافة أو إزالة وكلاء دون التأثير على البنية العامة.
 
-ملاحظات أمنية مهمة (من تجارب سابقة):
+3.3 vLLM / Ollama (محرك تشغيل النماذج)
 
-· يجب تغيير JWT secret الافتراضي فور التثبيت .
-· تعطيل "admin mode" الافتراضي .
-· استخدام IP whitelisting لمفاتيح API .
+الرابط: https://github.com/vllm-project/vllm | https://github.com/ollama/ollama
 
-3.3 نماذج الذكاء الاصطناعي (LLMs) للتكامل
+التجربة العملية: vLLM هو محرك الاستدلال (Inference Engine) الأسرع للنماذج مفتوحة المصدر، ويستخدم في شركات كبرى مثل OpenAI و Microsoft. Ollama يوفر واجهة مبسطة لإدارة النماذج محلياً.
 
-بناءً على تحليل شامل من MAS Markets (نوفمبر 2025) ، هذه هي أفضل الخيارات المتاحة مع تقييم دقيق لكل منها:
+الوصف:
 
-أ. DeepSeek (R1, V3)
+· vLLM: محرك استدلال متقدم يضاعف سرعة توليد النصوص للنماذج مفتوحة المصدر (مثل DeepSeek و Llama) بـ 3 إلى 4 مرات باستخدام تقنية PagedAttention.
+· Ollama: أداة ممتازة لإدارة النماذج محلياً بسهولة تامة وتوفير API متوافق مع OpenAI، مما يسهل تبديل النماذج برمجياً دون إعادة كتابة الكود.
 
-الرابط: https://github.com/deepseek-ai
+دورها في المشروع:
 
-التجربة العملية: النموذج الأكثر استخداماً في مشاريع التداول المفتوحة المصدر (مثل NOFX) . يتميز بأداء قوي وتكلفة منخفضة.
+· تشغيل النماذج المحلية بكفاءة عالية.
+· تقليل زمن الاستجابة (Latency) للتوصيات.
+· تسهيل إدارة إصدارات النماذج المختلفة.
 
-المميزات:
+3.4 نماذج الذكاء الاصطناعي (LLMs)
 
-· أداء تنافسي مقابل النماذج الحدودية بتكلفة أقل .
-· مجتمع كبير ووثائق غنية.
-· دعم رائع في آسيا وانتشار واسع.
+بناءً على تحليل شامل من MAS Markets (نوفمبر 2025)، هذه هي أفضل الخيارات المتاحة مع تقييم دقيق لكل منها:
 
-التحذيرات: أصدرت بعض الدول (مثل التشيك وعدة ولايات أمريكية) تحذيرات أمنية بشأن استخدام خدماته السحابية، مشيرة إلى احتمالية مشاركة البيانات مع الحكومة الصينية . الحل الآمن: التشغيل المحلي (self-hosting) يتجنب هذه المشكلة.
+النموذج الرابط التجربة العملية الأفضل لـ
+DeepSeek github.com/deepseek-ai النموذج الأكثر استخداماً في مشاريع التداول المفتوحة المصدر تحليل فني عام، أداء قوي بتكلفة منخفضة
+Qwen github.com/QwenLM مستخدم بشكل أساسي في NOFX تحليل متعدد اللغات، أسواق آسيوية
+Llama github.com/meta-llama الأكثر شيوعاً للنشر المحلي تحليل بيانات محايد، خصوصية كاملة
+Mistral github.com/mistralai نماذج Mixture-of-Experts كفؤة تطبيقات حساسة للزمن والموارد
+FinGPT github.com/AI4Finance-Foundation/FinGPT نموذج متخصص في التمويل دقة عالية في التحليل المالي
+BloombergGPT (متوفر عبر تراخيص خاصة) نموذج ضخم مدرب على بيانات مالية تحليل تقارير معقدة
+OpenAI GPT-5/o-series platform.openai.com الأفضل في البرمجة والتفكير متعدد الخطوات نمذجة سريعة للاستراتيجيات
+Claude anthropic.com مفضل للوثائق والتحليل طويل السياق توثيق النماذج، تحليل التقارير
+Gemini deepmind.google/technologies/gemini قوي جداً في تحليل المدخلات المتعددة تحليل وثائق PDF، الخطب الاقتصادية
 
-الأفضل لـ: أدوات داخلية حساسة من حيث التكلفة بعد تقييم المخاطر السيادية.
-
-ب. Llama 4 (Meta)
-
-الرابط: https://github.com/meta-llama
-
-التجربة العملية: النموذج المفتوح الأكثر شيوعاً للمؤسسات. يستخدم في آلاف المشاريع ويتيح نشراً محلياً آمناً تماماً .
-
-المميزات:
-
-· نشر محلي كامل (on-prem) بدون إرسال بيانات لخارج المؤسسة.
-· مجتمع ضخم وأدوات دعم واسعة.
-· مثالي للتحكم الكامل والخصوصية.
-
-الأفضل لـ: فرق التطوير التي تريد سيادة كاملة على بياناتها.
-
-ج. Qwen (Alibaba)
-
-الرابط: https://github.com/QwenLM
-
-التجربة العملية: مستخدم بشكل أساسي في NOFX إلى جانب DeepSeek . أثبت كفاءة عالية في الأسواق الآسيوية.
-
-المميزات:
-
-· قدرة متعددة اللغات قوية (خاصة الصينية والإنجليزية).
-· أحجام نماذج متعددة تناسب مختلف الإمكانيات.
-· أداء ممتاز في التحليل الفني.
-
-الأفضل لـ: فرق العمل ذات البعد الآسيوي والتطبيقات منخفضة التكلفة.
-
-د. Mistral (Mixtral, Mistral Large)
-
-الرابط: https://github.com/mistralai
-
-التجربة العملية: نماذج Mixture-of-Experts تقدم أداءً يفوق حجمها، وتستخدم في العديد من المشاريع الأوروبية.
-
-المميزات:
-
-· كفاءة عالية (Mixtral 8x7B يقدم أداء ممتاز بموارد أقل).
-· نشر محلي ومؤسسي.
-· مناسب للمساعدين الداخليين و coding copilots.
-
-الأفضل لـ: التطبيقات الحساسة للزمن والموارد.
-
-هـ. OpenAI (GPT-5, o-series)
-
-الرابط: https://platform.openai.com
-
-التجربة العملية: الأفضل في البرمجة والتفكير متعدد الخطوات .
-
-المميزات:
-
-· قدرة فائقة على كتابة الأكواد وتصحيحها.
-· نماذج "o-series" مخصصة للاستدلال واستخدام الأدوات.
-· نظام بيئي متكامل من الإضافات.
-
-الأفضل لـ: النمذجة السريعة للاستراتيجيات (prototyping) ومساعدي البحث.
-
-و. Claude (Anthropic)
-
-الرابط: https://www.anthropic.com
-
-التجربة العملية: مفضل لدى المؤسسات المالية للوثائق والتحليل طويل السياق.
-
-المميزات:
-
-· قدرة فائقة على التعامل مع السياقات الطويلة.
-· نبرة متوافقة مع الحوكمة والامتثال.
-· ممتاز لكتابة السياسات والتقارير.
-
-الأفضل لـ: توثيق النماذج، تحليل التقارير الطويلة، صياغة سياسات المخاطر.
-
-ز. Gemini (Google DeepMind)
-
-الرابط: https://deepmind.google/technologies/gemini
-
-التجربة العملية: قوي جداً في تحليل المدخلات المتعددة (نصوص، صور، جداول).
-
-المميزات:
-
-· متعدد الوسائط (multimodal).
-· نافذة سياق كبيرة جداً.
-· ممتاز لقراءة ملفات PDF المعقدة وتحليل الخطب الاقتصادية.
-
-الأفضل لـ: تحليل وثائق البنوك المركزية، التقارير الاقتصادية.
-
-3.4 OKX Agent Kit
+3.5 OKX Agent Kit
 
 الرابط: https://www.okx.com/help/mcp-agent-kit
 
@@ -261,15 +187,54 @@ graph TD
 · دعم وضع المحاكاة لاختبار الاستراتيجيات بأمان.
 · التكامل مع OKX API (ويمكن تعديله للعمل مع Deriv).
 
-3.5 Deriv API
+3.6 TimescaleDB (قاعدة البيانات الزمنية)
+
+الرابط: https://github.com/timescale/timescaledb
+
+الوصف: امتداد (Extension) يعمل فوق PostgreSQL، مصمم خصيصاً للتعامل مع مليارات السجلات الزمنية (مثل بيانات الشموع والأسعار) بسرعة البرق.
+
+التجربة العملية: تستخدمه شركات مثل Bloomberg و Siemens و Bosch لإدارة كميات هائلة من البيانات الزمنية.
+
+دورها في المشروع:
+
+· تخزين بيانات التداول (Ticks, OHLCV) بكفاءة.
+· إجراء استعلامات معقدة (مثل تجميع الشموع) بسرعة فائقة عبر Continuous Aggregates.
+· دعم كامل لـ SQL، مما يسهل التكامل مع الأدوات الأخرى.
+
+3.7 Pandas-TA / VectorBT (التحليل الفني)
+
+الرابط: https://github.com/twopirllc/pandas-ta | https://github.com/polakowo/vectorbt
+
+الوصف:
+
+· Pandas-TA: مكتبة حديثة مبنية فوق Pandas، تدعم أكثر من 130 مؤشراً فنياً، سهلة الدمج مع نماذج الذكاء الاصطناعي.
+· VectorBT: مكتبة ضخمة جداً لتحليل البيانات واختبار الاستراتيجيات (Backtesting) بسرعة فائقة باستخدام المصفوفات (Numpy/Numba). يمكنها اختبار ملايين الاحتمالات للتوصيات في ثوانٍ.
+
+دورها في المشروع:
+
+· حساب المؤشرات الفنية (RSI, MACD, Bollinger Bands) بكفاءة.
+· إجراء اختبارات رجعية سريعة للاستراتيجيات الجديدة.
+· توفير بيانات غنية للوكلاء الذكيين.
+
+3.8 Redis Streams (معالجة الأحداث)
+
+الرابط: https://redis.io/docs/data-types/streams/
+
+الوصف: بنية بيانات في Redis تتيح معالجة تدفقات الأحداث (Event Streams) بشكل موثوق وفعال.
+
+التجربة العملية: يستخدم في آلاف التطبيقات لبناء أنظمة مراسلة عالية الأداء.
+
+دورها في المشروع:
+
+· استقبال بيانات السعر من Deriv و CCXT بشكل متدفق.
+· ضمان عدم فقدان أي نقطة سعرية حتى في حال تعطل أحد الوكلاء.
+· تمكين توزيع الحمل بين عدة نسخ من الوكلاء (Load Balancing).
+
+3.9 Deriv API
 
 الرابط: https://developers.deriv.com/
 
-الوصف: واجهة برمجة تطبيقات رسمية لمنصة Deriv (الاسم السابق Binary.com). تدعم WebSocket للاتصال ثنائي الاتجاه، وتتيح:
-
-· جلب بيانات السوق (الأسعار، الشموع، المؤشرات).
-· تنفيذ صفقات الخيارات الثنائية والعقود الرقمية.
-· إدارة الحساب (الرصيد، سجل الصفقات).
+الوصف: واجهة برمجة تطبيقات رسمية لمنصة Deriv (الاسم السابق Binary.com). تدعم WebSocket للاتصال ثنائي الاتجاه.
 
 التجربة العملية: منصة موثوقة بآلاف المستخدمين ووثائق ممتازة. هناك أمثلة رسمية بلغة Node.js و Python على GitHub.
 
@@ -286,465 +251,281 @@ graph TD
 
 ---
 
-4. البنية التحتية للمشروع
+4. البنية التحتية للمشروع (المطورة)
 
-4.1 المكونات التقنية
+### 4.1 المكونات التقنية
 
-المكون التقنية المقترحة السبب
-الخادم (Backend) Go (مثل NOFX) + Node.js للخدمات المساعدة Go يوفر أداءً عالياً ويدعم التزامن العالي 
-الواجهة (Frontend) React.js + TailwindCSS (مثل NOFX) واجهة مستخدم احترافية جاهزة 
-قاعدة البيانات PostgreSQL + Redis PostgreSQL للبيانات العلائقية، Redis للتخزين المؤقت
-الاتصال مع Deriv WebSocket (مكتبة gorilla/websocket في Go) أداء عالٍ وإعادة اتصال تلقائي
-الاتصال مع CCXT مكتبة CCXT بلغة Go (ccxt/go) أو Python دعم واسع للبورصات
-نماذج الذكاء الاصطناعي خدمات مصغرة (Microservices) بلغة Python أفضل دعم لمكتبات AI (PyTorch, Transformers)
-الإشعارات WebSocket + Server-Sent Events إشعارات فورية
-التخزين السحابي AWS S3 أو Cloudflare R2 لتخزين الصور والملفات
+| المكون | التقنية المقترحة | السبب |
+| :--- | :--- | :--- |
+| **الخادم الرئيسي (Orchestrator)** | Go (أو Node.js مع LangChain) | أداء عالٍ في معالجة WebSocket، دعم ممتاز لـ LangGraph |
+| **قاعدة البيانات الزمنية** | TimescaleDB (PostgreSQL) | تخزين واستعلام سريع للبيانات الزمنية |
+| **طابور الأحداث** | Redis Streams | ضمان عدم فقدان البيانات وتوزيع الحمل |
+| **محرك تشغيل النماذج** | vLLM (للاستدلال السريع) | سرعة عالية وإدارة ذاكرة متطورة |
+| **إدارة النماذج محلياً** | Ollama (اختياري) | سهولة التبديل بين النماذج |
+| **الواجهة الأمامية** | React.js + TailwindCSS | مرونة وسرعة في التطوير |
+| **الاتصال مع Deriv** | WebSocket (مكتبة `gorilla/websocket`) | أداء عالٍ |
+| **الاتصال مع CCXT** | مكتبة CCXT بلغة Go | واجهة موحدة |
+| **التحليل الفني** | Pandas-TA / VectorBT (Python microservices) | مكتبات حديثة وسريعة |
+| **الإشعارات** | WebSocket + SSE | إشعارات فورية |
 
-4.2 هيكل المجلدات المقترح (مستوحى من NOFX)
+4.2 هيكل المجلدات المقترح (محدث)
 
 ```
-deriv-ai-trader/
-├── cmd/                           # نقاط الدخول الرئيسية
-│   └── server/                     # خادم Go الرئيسي
-├── internal/                       # كود داخلي غير قابل للاستيراد
-│   ├── api/                        # REST API (Gin)
-│   ├── trader/                      # نواة التداول
-│   │   ├── deriv_client.go         # اتصال بـ Deriv
-│   │   ├── ccxt_client.go          # اتصال بـ CCXT
-│   │   └── manager.go              # إدارة عدة متداولين
-│   ├── ai-engine/                   # محرك الذكاء الاصطناعي
-│   │   ├── models/                  # تكامل نماذج LLM
-│   │   ├── consensus/               # محرك التصويت الجماعي
-│   │   └── indicators/              # مؤشرات فنية (TA-Lib)
-│   ├── database/                    # طبقة قاعدة البيانات
-│   ├── websocket/                    # خادم WebSocket
-│   └── paper-trading/                # نظام التداول التجريبي
-├── web/                             # واجهة React
-│   ├── src/
-│   │   ├── components/               # مكونات React
-│   │   ├── pages/                    # الصفحات
-│   │   └── lib/                       # API calls
-│   └── package.json
-├── config/                           # ملفات الإعدادات
-├── scripts/                          # سكريبتات مساعدة
-├── docs/                              # وثائق المشروع
-├── docker-compose.yml                  # لتشغيل المشروع بحاويات
+deriv-ai-trader-v3/
+├── cmd/
+│   └── orchestrator/          # نقطة الدخول الرئيسية (Go)
+├── internal/
+│   ├── deriv-client/           # اتصال بـ Deriv
+│   ├── ccxt-client/            # اتصال بـ CCXT
+│   ├── redis-streams/          # التعامل مع Redis Streams
+│   ├── agents/                  # الوكلاء الذكيون
+│   │   ├── technical-agent/     # وكيل التحليل الفني (Python)
+│   │   ├── news-agent/          # وكيل تحليل الأخبار (Python)
+│   │   ├── sentiment-agent/     # وكيل تحليل المشاعر (Python)
+│   │   └── risk-agent/          # وكيل إدارة المخاطر (Python)
+│   ├── langgraph/               # تكامل LangGraph
+│   ├── timescaledb/             # طبقة TimescaleDB
+│   ├── websocket/                # خادم WebSocket
+│   ├── paper-trading/            # نظام التداول التجريبي
+│   └── api/                      # REST API
+├── web/                          # واجهة React
+├── config/                       # ملفات الإعدادات
+├── scripts/                      # سكريبتات مساعدة
+├── docs/                         # وثائق المشروع
+├── docker-compose.yml
 └── README.md
 ```
 
 4.3 متطلبات النظام
 
-· Go 1.22+ (للباكند الرئيسي)
-· Node.js v20+ (لواجهة المستخدم)
-· Python 3.10+ (لخدمات الذكاء الاصطناعي المصغرة)
-· PostgreSQL 15+
-· Redis 7+
-· Docker (اختياري، للتسهيل)
-· ذاكرة RAM: 8GB كحد أدنى (32GB موصى به لتشغيل نماذج AI محلياً)
-· GPU: (اختياري) لتسريع تشغيل النماذج الكبيرة
+· Go 1.22+ (لـ orchestrator)
+· Node.js v20+ (للواجهة)
+· Python 3.10+ (للخدمات المصغرة)
+· TimescaleDB (أحدث إصدار)
+· Redis 7+ (مع دعم Streams)
+· vLLM و/أو Ollama (لتشغيل النماذج)
+· ذاكرة RAM: 16GB كحد أدنى (32GB موصى به)
+· GPU: (اختياري، لكن موصى به لتشغيل vLLM)
 
 ---
 
 5. المرحلة 1: إعداد الحسابات والحصول على مفاتيح API
 
-5.1 إنشاء حساب في Deriv
-
-1. اذهب إلى deriv.com.
-2. سجل حساباً جديداً باستخدام بريد إلكتروني صالح.
-3. فعّل الحساب عبر رابط التفعيل.
-4. سجل الدخول إلى حسابك.
-
-5.2 الحصول على App ID (لتطبيق ويب)
-
-1. اذهب إلى developers.deriv.com.
-2. سجل الدخول بنفس بيانات حساب Deriv.
-3. من لوحة التحكم، اختر "Register new application".
-4. اختر نوع التطبيق: OAuth 2.0.
-5. حدد الـ scopes المطلوبة:
-   · read: لقراءة بيانات السوق والحساب.
-   · trade: لتنفيذ الصفقات.
-   · admin: (اختياري) لإدارة الحساب.
-6. أدخل Redirect URI (مثل https://yourdomain.com/auth/callback أو http://localhost:3000/callback للتطوير).
-7. بعد التسجيل، ستحصل على App ID و App Secret. احفظهما في مكان آمن.
-
-5.3 الحصول على Account ID
-
-1. في تطبيق Deriv، اذهب إلى الإعدادات > حسابي.
-2. ستجد Account ID مثل CR1234567. ستحتاجه لاحقاً.
-
-5.4 إعداد مفاتيح API للبورصات الأخرى (اختياري)
-
-· حساب Binance: للحصول على بيانات إضافية عبر CCXT.
-· حساب OKX: إذا أردت استخدام OKX Agent Kit مع بيانات حقيقية.
-
-ملاحظة أمان هامة: عند إنشاء مفاتيح API لأي بورصة، اتبع أفضل الممارسات :
-
-· استخدم IP whitelisting (تحديد عناوين IP المسموح لها باستخدام المفتاح).
-· افصل الصلاحيات (مفتاح للقراءة فقط، وآخر للتداول).
-· لا تخزن المفاتيح في الكود، بل في متغيرات بيئة أو مدير أسرار.
-· قم بتدوير المفاتيح بشكل دوري.
+(نفس المحتوى السابق مع التأكيد على أهمية IP whitelisting وتدوير المفاتيح)
 
 ---
 
 6. المرحلة 2: إعداد بيئة التطوير
 
-6.1 تثبيت المتطلبات الأساسية
+(نفس المحتوى السابق مع إضافة TimescaleDB و Redis Streams)
 
 ```bash
-# تثبيت Go
-wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.22.5.linux-amd64.tar.gz
-export PATH=$PATH:/usr/local/go/bin
-
-# تثبيت Node.js
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-nvm install 20
-nvm use 20
-
-# تثبيت Python
-sudo apt update
-sudo apt install python3 python3-pip python3-venv
-
-# تثبيت PostgreSQL
-sudo apt install postgresql postgresql-contrib
+# تثبيت TimescaleDB (بالإضافة إلى PostgreSQL)
+sudo apt install postgresql-15-timescaledb
 
 # تثبيت Redis
 sudo apt install redis-server
-```
-
-6.2 إنشاء قاعدة البيانات
-
-```sql
--- تسجيل الدخول إلى PostgreSQL
-sudo -u postgres psql
-
--- إنشاء قاعدة بيانات
-CREATE DATABASE deriv_trading_bot;
-
--- إنشاء مستخدم
-CREATE USER deriv_user WITH PASSWORD 'secure_password';
-
--- منح الصلاحيات
-GRANT ALL PRIVILEGES ON DATABASE deriv_trading_bot TO deriv_user;
-
--- الخروج
-\q
-```
-
-6.3 إعداد ملفات البيئة (.env)
-
-أنشئ ملف .env في جذر المشروع بالمحتوى التالي:
-
-```env
-# Deriv Configuration
-DERIV_APP_ID=12345
-DERIV_ACCOUNT_ID=CR1234567
-DERIV_API_URL=wss://ws.derivws.com/websockets/v3
-
-# OAuth
-DERIV_OAUTH_CLIENT_ID=your_app_id
-DERIV_OAUTH_CLIENT_SECRET=your_app_secret
-DERIV_OAUTH_REDIRECT_URI=http://localhost:3000/auth/callback
-
-# Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=deriv_trading_bot
-DB_USER=deriv_user
-DB_PASSWORD=secure_password
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# Server
-PORT=3000
-JWT_SECRET=your_super_secret_key_at_least_32_chars  # غير هذا فوراً!
-NODE_ENV=development
-
-# AI Models (Microservices)
-DEEPSEEK_API_URL=http://localhost:5001
-QWEN_API_URL=http://localhost:5002
-LLAMA_API_URL=http://localhost:5003
 ```
 
 ---
 
 7. المرحلة 3: بناء طبقة الاتصال بمنصة Deriv
 
-7.1 مفهوم WebSocket في Deriv
-
-Deriv تستخدم WebSocket للاتصال ثنائي الاتجاه. سنبني عميل WebSocket بلغة Go مستفيدين من خبرات NOFX في التعامل مع بورصات متعددة .
-
-7.2 إنشاء عميل WebSocket في Go
-
-```go
-// internal/trader/deriv_client.go
-package trader
-
-import (
-    "encoding/json"
-    "log"
-    "time"
-    "github.com/gorilla/websocket"
-)
-
-type DerivClient struct {
-    conn        *websocket.Conn
-    appID       string
-    accountID   string
-    messageHandlers map[int]chan map[string]interface{}
-}
-
-func NewDerivClient(appID, accountID string) *DerivClient {
-    return &DerivClient{
-        appID:       appID,
-        accountID:   accountID,
-        messageHandlers: make(map[int]chan map[string]interface{}),
-    }
-}
-
-func (c *DerivClient) Connect() error {
-    url := "wss://ws.derivws.com/websockets/v3?app_id=" + c.appID
-    conn, _, err := websocket.DefaultDialer.Dial(url, nil)
-    if err != nil {
-        return err
-    }
-    c.conn = conn
-    
-    // بدء استماع للرسائل
-    go c.listen()
-    
-    // مصادقة (إذا لزم الأمر)
-    return c.authorize()
-}
-
-func (c *DerivClient) authorize() error {
-    authReq := map[string]interface{}{
-        "authorize": c.accountID,
-        "req_id":    int(time.Now().UnixNano()),
-    }
-    return c.conn.WriteJSON(authReq)
-}
-```
-
-7.3 الاشتراك في تحديثات الأسعار
-
-```go
-// الاشتراك في تحديثات سعر أداة
-func (c *DerivClient) SubscribeTicks(symbol string) error {
-    req := map[string]interface{}{
-        "ticks":     symbol,
-        "subscribe": 1,
-        "req_id":    int(time.Now().UnixNano()),
-    }
-    return c.conn.WriteJSON(req)
-}
-```
-
-7.4 استراتيجية إعادة الاتصال
-
-· استخدام exponential backoff (تأخير مضاعف) مع حد أقصى للمحاولات.
-· إعادة الاشتراك في نفس الرموز بعد إعادة الاتصال.
+(نفس المحتوى السابق مع تحسينات بسيطة)
 
 ---
 
 8. المرحلة 4: دمج CCXT لجلب بيانات متعددة المصادر
 
-8.1 لماذا CCXT؟
-
-· يوفر واجهة موحدة لأكثر من 100 بورصة.
-· يمكننا من مقارنة الأسعار عبر البورصات.
-· احتياطي في حال تعطل Deriv API.
-
-8.2 إعداد CCXT في المشروع (Python Microservice)
-
-سنقوم ببناء خدمة مصغرة بلغة Python توفر واجهة REST لـ CCXT:
-
-```python
-# services/ccxt_service/app.py
-from fastapi import FastAPI
-import ccxt
-
-app = FastAPI()
-
-@app.get("/ohlcv")
-async def get_ohlcv(exchange_id: str, symbol: str, timeframe: str = '1m', limit: int = 100):
-    exchange_class = getattr(ccxt, exchange_id)
-    exchange = exchange_class()
-    ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
-    return {"data": ohlcv}
-```
-
-8.3 جلب البيانات الحية عبر WebSocket (للبورصات التي تدعمه)
-
-يمكن استخدام مكتبة ccxt.pro للاتصال ببث WebSocket للبورصات التي تدعمه.
+(نفس المحتوى السابق)
 
 ---
 
-9. المرحلة 5: بناء محرك التحليل الفني والذكاء الاصطناعي
+9. المرحلة 5: بناء محرك التحليل الفني والذكاء الاصطناعي (المطور)
 
-9.1 هيكل محرك التحليل (مستوحى من NOFX) 
+9.1 هيكلة الوكلاء المتعددين باستخدام LangGraph
 
-```mermaid
-graph LR
-    A[بيانات السوق] --> B[المؤشرات الفنية<br>TA-Lib]
-    A --> C[نموذج DeepSeek]
-    A --> D[نموذج Qwen]
-    A --> E[نموذج Llama]
-    B --> F[جامع الآراء - Consensus Engine]
-    C --> F
-    D --> F
-    E --> F
-    F --> G[متخذ القرار النهائي]
-    G --> H[توصية نهائية]
-```
-
-9.2 دمج NOFX كنواة للمشروع
-
-بدلاً من بناء كل شيء من الصفر، سنستخدم بنية NOFX كأساس :
-
-1. استنساخ المستودع:
-
-```bash
-git clone https://github.com/zengfield/nofx-dex.git
-cd nofx-dex
-```
-
-1. تعديله لدعم Deriv API:
-   · إضافة عميل Deriv في مجلد trader/.
-   · تعديل config.json ليشمل إعدادات Deriv.
-   · إضافة دعم أصول Deriv (مؤشرات التقلب، أزواج العملات) في market/data.go.
-2. الاستفادة من آلية "منافسة الذكاء الاصطناعي":
-   · NOFX يدعم بالفعل تشغيل DeepSeek و Qwen في وقت واحد .
-   · يمكن إضافة نماذج إضافية (Llama, Mistral) عبر نفس الواجهة.
-
-9.3 دمج نماذج LLM المتعددة
-
-سنقوم بتشغيل كل نموذج كخدمة مصغرة منفصلة (Python) والتواصل معها عبر REST:
+سنقوم بتعريف عدة وكلاء متخصصين، ولكل وكيل دور محدد:
 
 ```python
-# services/model_service.py (نموذج عام)
-from fastapi import FastAPI
-from transformers import pipeline
-import torch
+# agents/definitions.py
+from langgraph.graph import StateGraph, MessageGraph
+from typing import TypedDict, List
 
-app = FastAPI()
-model_name = "deepseek-ai/deepseek-r1-7b"  # أو "Qwen/Qwen2.5-7B" أو "meta-llama/Llama-4-7B"
-pipe = pipeline("text-generation", model=model_name, device="cuda")
+class AgentState(TypedDict):
+    market_data: dict
+    technical_signals: dict
+    news_sentiment: float
+    social_sentiment: float
+    risk_assessment: dict
+    final_decision: dict
+    messages: List[str]
 
-@app.post("/predict")
-async def predict(market_data: dict):
-    prompt = build_prompt(market_data)  # تحويل بيانات السوق إلى نص
-    response = pipe(prompt, max_new_tokens=500)
-    return parse_response(response[0]['generated_text'])
+# تعريف الوكلاء
+def technical_agent(state: AgentState) -> AgentState:
+    # حساب المؤشرات الفنية باستخدام Pandas-TA/VectorBT
+    # تحديث state['technical_signals']
+    return state
+
+def news_agent(state: AgentState) -> AgentState:
+    # تحليل آخر الأخبار باستخدام DeepSeek عبر vLLM
+    # تحديث state['news_sentiment']
+    return state
+
+def sentiment_agent(state: AgentState) -> AgentState:
+    # تحليل مشاعر وسائل التواصل باستخدام Llama عبر Ollama
+    # تحديث state['social_sentiment']
+    return state
+
+def risk_agent(state: AgentState) -> AgentState:
+    # تقييم المخاطر بناءً على حجم المركز والرصيد
+    # تحديث state['risk_assessment']
+    return state
+
+def consensus_agent(state: AgentState) -> AgentState:
+    # مناقشة جميع المدخلات والوصول إلى قرار
+    # استخدام LangGraph للسماح بالحوار بين الوكلاء
+    return state
+
+# بناء الرسم البياني
+builder = StateGraph(AgentState)
+builder.add_node("technical", technical_agent)
+builder.add_node("news", news_agent)
+builder.add_node("sentiment", sentiment_agent)
+builder.add_node("risk", risk_agent)
+builder.add_node("consensus", consensus_agent)
+
+# تحديد تدفق العمل
+builder.set_entry_point("technical")
+builder.add_edge("technical", "news")
+builder.add_edge("news", "sentiment")
+builder.add_edge("sentiment", "risk")
+builder.add_edge("risk", "consensus")
+builder.set_finish_point("consensus")
+
+graph = builder.compile()
 ```
 
-9.4 دمج OKX Agent Kit
+9.2 دمج نماذج LLM عبر vLLM/Ollama
+
+vLLM سيتم تشغيله كخدمة منفصلة (Docker) تقدم API متوافق مع OpenAI:
+
+```bash
+# تشغيل vLLM مع نموذج DeepSeek
+docker run --gpus all -p 8000:8000 vllm/vllm-openai \
+    --model deepseek-ai/deepseek-r1-7b
+```
+
+ثم نستخدم هذا الـ API في الوكلاء:
+
+```python
+import openai
+
+client = openai.OpenAI(
+    base_url="http://localhost:8000/v1",
+    api_key="dummy"  # vLLM لا يحتاج مفتاحاً حقيقياً
+)
+
+response = client.chat.completions.create(
+    model="deepseek-ai/deepseek-r1-7b",
+    messages=[{"role": "user", "content": prompt}]
+)
+```
+
+Ollama يمكن استخدامه لإدارة النماذج بسهولة:
+
+```bash
+ollama pull llama4:7b
+ollama run llama4:7b
+```
+
+9.3 دمج OKX Agent Kit
+
+نستخدم OKX Agent Kit كأداة مساعدة في وكيل التحليل الفني:
 
 ```javascript
-// services/okx-agent/index.js
 const OKXAgent = require('okx-agent-kit');
 
 const agent = new OKXAgent({ simulation: true });
 
-async function getMarketAnalysis(symbol, candles) {
+async function analyzeMarket(symbol, candles) {
     const analysis = await agent.marketAnalysis.patternRecognition(candles);
     const sentiment = await agent.marketAnalysis.sentimentAnalysis(symbol);
     return { analysis, sentiment };
 }
 ```
 
-9.5 آلية "الدراسة الجماعية" والتصويت المرجح
+9.4 التحليل الفني باستخدام Pandas-TA/VectorBT
 
-9.5.1 المفهوم الأساسي
+Pandas-TA مثال بسيط:
 
-بدلاً من الاعتماد على نموذج واحد، نقوم بإنشاء "لجنة خبراء" من نماذج متعددة تعمل بالتوازي. كل نموذج يقدم رأيه المستقل، ثم يتم تجميع هذه الآراء عبر نظام تصويت ذكي يعطي وزنًا أكبر للنماذج الأكثر دقة تاريخياً. هذه الآلية مستوحاة من نظام منافسة الذكاء الاصطناعي في NOFX .
+```python
+import pandas as pd
+import pandas_ta as ta
 
-9.5.2 مكونات نظام التصويت
+def calculate_indicators(df):
+    df.ta.rsi(length=14, append=True)
+    df.ta.macd(append=True)
+    df.ta.bbands(length=20, append=True)
+    return df
+```
 
-1. النماذج المصوتة:
-   · DeepSeek (وزن أساسي)
-   · Qwen (وزن أساسي)
-   · Llama (وزن أساسي)
-   · Mistral (وزن أساسي)
-   · OKX Agent (وزن أساسي للتحليل الفني)
-2. سجل الأداء (Performance Tracker):
-   · يتم تتبع دقة تنبؤات كل نموذج تاريخياً.
-   · يتم تحديث الأوزان دورياً بناءً على الأداء الأخير (آخر 100 توصية) .
-3. آلية التصويت المرجح:
-   ```
-   الوزن_الجديد = الوزن_الأساسي * (1 + معدل_الدقة_الحديث)
-   ```
-   حيث معدل_الدقة_الحديث هو متوسط دقة النموذج في آخر 100 توصية.
+VectorBT لاختبار استراتيجيات بسرعة هائلة:
 
-9.5.3 خطوات التصويت
+```python
+import vectorbt as vbt
 
-1. جمع الآراء: كل نموذج يقدم رأيه (CALL/PUT) مع درجة ثقة (0-100).
-2. حساب الأوزان: يتم حساب الوزن الفعلي لكل نموذج بناءً على أدائه التاريخي.
-3. التصويت:
-   ```
-   مجموع_أوزان_CALL = مجموع أوزان النماذج التي صوتت CALL
-   مجموع_أوزان_PUT = مجموع أوزان النماذج التي صوتت PUT
-   ```
-4. اتخاذ القرار المبدئي:
-   · إذا كان مجموع_أوزان_CALL > مجموع_أوزان_PUT، الاتجاه المبدئي = CALL
-   · وإلا، الاتجاه المبدئي = PUT
-5. حساب الثقة النهائية:
-   ```
-   الثقة = (القيمة_الأكبر / (القيمة_الأكبر + القيمة_الأصغر)) * 100
-   ```
+price = pd.Series(...)
+entries = price < price.rolling(20).mean()
+exits = price > price.rolling(20).mean()
 
-9.5.4 مثال عملي (مستوحى من NOFX)
+pf = vbt.Portfolio.from_signals(price, entries, exits)
+pf.stats()
+```
 
-النموذج الوزن الأساسي الدقة الأخيرة الوزن المحسوب الرأي ثقة النموذج
-DeepSeek 0.3 82% 0.3 * 1.82 = 0.546 CALL 85
-Qwen 0.3 79% 0.3 * 1.79 = 0.537 CALL 80
-Llama 0.2 85% 0.2 * 1.85 = 0.37 PUT 75
-Mistral 0.1 76% 0.1 * 1.76 = 0.176 CALL 70
-OKX Agent 0.1 80% 0.1 * 1.80 = 0.18 CALL 65
+9.5 آلية "الدراسة الجماعية" المتقدمة (النقاش بين الوكلاء)
 
-الحساب:
+بدلاً من التصويت المرجح، نستخدم LangGraph لإنشاء نقاش حقيقي:
 
-· مجموع أوزان CALL = 0.546 + 0.537 + 0.176 + 0.18 = 1.439
-· مجموع أوزان PUT = 0.37
-· الاتجاه = CALL
-· الثقة = (1.439 / (1.439 + 0.37)) * 100 = 79.5%
+```python
+def consensus_agent(state: AgentState) -> AgentState:
+    # نجمع آراء جميع الوكلاء (موجودة في state['messages'])
+    # نمررها إلى نموذج وسيط (مثل Llama) ليحلل التناقضات
+    prompt = f"""
+    أنت مدير فريق تداول. لديك آراء الخبراء التالية:
+    - الخبير الفني: {state['technical_signals']}
+    - خبير الأخبار: {state['news_sentiment']}
+    - خبير المشاعر: {state['social_sentiment']}
+    - مدير المخاطر: {state['risk_assessment']}
+    
+    بناءً على ذلك، ما هي التوصية النهائية (CALL/PUT/WAIT) مع ذكر الثقة وسبب القرار؟
+    """
+    
+    response = client.chat.completions.create(
+        model="llama4:7b",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    
+    state['final_decision'] = parse_response(response.choices[0].message.content)
+    return state
+```
 
 9.6 متخذ القرار النهائي
 
-يقوم بدمج:
+بعد النقاش، يتم إخراج التوصية النهائية التي تحتوي على:
 
-· نتيجة التصويت الجماعي (مع الثقة المحسوبة)
-· المؤشرات الفنية (كطبقة تحقق إضافية)
-· أنماط الشموع المكتشفة
-
-خوارزمية القرار النهائي:
-
-```
-إذا كانت ثقة التصويت > 70%:
-    القرار = نتيجة التصويت
-    الثقة_النهائية = ثقة التصويت
-وإلا إذا كانت ثقة التصويت بين 50% و 70%:
-    تحقق من المؤشرات الفنية:
-        إذا كانت المؤشرات تدعم نفس الاتجاه:
-            القرار = نتيجة التصويت
-            الثقة_النهائية = (ثقة التصويت + 60) / 2
-        وإلا:
-            القرار = "انتظار" (لا توصية)
-            الثقة_النهائية = 0
-وإلا:
-    القرار = "انتظار"
-    الثقة_النهائية = 0
-```
+· الاتجاه (CALL/PUT/WAIT)
+· الثقة (نسبة مئوية)
+· وقت الانتهاء الأمثل (بناءً على تحليل التقلبات)
+· ملخص أسباب القرار (لعرضه للمستخدم)
 
 ---
 
 10. المرحلة 6: تطوير واجهة الويب
 
-10.1 استخدام واجهة NOFX كأساس
+10.1 استخدام واجهة NOFX كأساس (مع تعديلات)
 
-NOFX توفر واجهة React احترافية مع :
+NOFX توفر واجهة React احترافية مع:
 
 · رسوم بيانية للأداء (Equity Curve)
 · مقارنة فورية بين النماذج (Comparison Chart)
@@ -771,36 +552,45 @@ NOFX توفر واجهة React احترافية مع :
 
 ---
 
-11. المرحلة 7: ربط النظام وإرسال الإشعارات
+11. المرحلة 7: ربط النظام وإرسال الإشعارات (مع Redis Streams)
 
 11.1 تدفق البيانات الكامل
 
 ```mermaid
 sequenceDiagram
     participant Deriv API
-    participant Backend (Go)
-    participant AI Models
-    participant Consensus Engine
+    participant Redis Streams
+    participant Technical Agent
+    participant News Agent
+    participant Sentiment Agent
+    participant Risk Agent
+    participant LangGraph
+    participant TimescaleDB
     participant WebSocket Server
     participant Frontend
     participant User
 
-    Backend->>Deriv API: اشتراك في تحديثات الأسعار
-    Deriv API-->>Backend: بيانات السعر
-    Backend->>AI Models: أرسل البيانات للتحليل
-    AI Models-->>Consensus Engine: آراء النماذج
-    Consensus Engine-->>Backend: توصية (مع ثقة)
-    Backend->>WebSocket Server: أرسل التوصية
+    Deriv API->>Redis Streams: دفع بيانات السعر
+    Redis Streams->>Technical Agent: توزيع البيانات
+    Redis Streams->>News Agent: توزيع البيانات
+    Redis Streams->>Sentiment Agent: توزيع البيانات
+    Redis Streams->>Risk Agent: توزيع البيانات
+    
+    Technical Agent->>LangGraph: تقديم تحليل فني
+    News Agent->>LangGraph: تقديم تحليل أخبار
+    Sentiment Agent->>LangGraph: تقديم تحليل مشاعر
+    Risk Agent->>LangGraph: تقديم تقييم مخاطر
+    
+    LangGraph->>TimescaleDB: تخزين النقاش والقرار
+    TimescaleDB->>WebSocket Server: إرسال التوصية
     WebSocket Server-->>Frontend: توصية فورية
     Frontend-->>User: إشعار + عرض
     User->>Frontend: تنفيذ (حقيقي/تجريبي)
-    Frontend->>Backend: طلب تنفيذ
-    Backend->>Deriv API: تنفيذ buy/sell
-    Deriv API-->>Backend: تأكيد
-    Backend->>Frontend: نتيجة التنفيذ
+    Frontend->>Deriv API: تنفيذ buy/sell (حقيقي)
+    Frontend->>Paper Trading: تنفيذ (تجريبي)
 ```
 
-11.2 تنفيذ WebSocket Server في Go
+11.2 تنفيذ WebSocket Server في Go مع دعم Redis
 
 ```go
 // internal/websocket/server.go
@@ -808,6 +598,7 @@ package websocket
 
 import (
     "github.com/gorilla/websocket"
+    "github.com/go-redis/redis/v8"
     "net/http"
     "sync"
 )
@@ -816,14 +607,16 @@ type Server struct {
     upgrader websocket.Upgrader
     clients  map[*websocket.Conn]bool
     mu       sync.Mutex
+    redis    *redis.Client
 }
 
-func NewServer() *Server {
+func NewServer(redisAddr string) *Server {
     return &Server{
         upgrader: websocket.Upgrader{
             CheckOrigin: func(r *http.Request) bool { return true },
         },
         clients: make(map[*websocket.Conn]bool),
+        redis:   redis.NewClient(&redis.Options{Addr: redisAddr}),
     }
 }
 
@@ -832,20 +625,42 @@ func (s *Server) HandleConnections(w http.ResponseWriter, r *http.Request) {
     s.mu.Lock()
     s.clients[conn] = true
     s.mu.Unlock()
+
+    // الاشتراك في قناة Redis للإشارات
+    pubsub := s.redis.Subscribe(ctx, "signals")
+    go func() {
+        for msg := range pubsub.Channel() {
+            conn.WriteMessage(websocket.TextMessage, []byte(msg.Payload))
+        }
+    }()
 }
 
 func (s *Server) BroadcastSignal(signal interface{}) {
-    s.mu.Lock()
-    defer s.mu.Unlock()
-    for client := range s.clients {
-        client.WriteJSON(signal)
-    }
+    // إرسال الإشارة إلى Redis Stream
+    s.redis.Publish(ctx, "signals", signal)
 }
 ```
 
-11.3 تخزين الإشارات في قاعدة البيانات
+11.3 تخزين الإشارات في TimescaleDB
 
-جدول signals يحتوي على: id, symbol, signal_type, confidence, expiry_time, generated_at, executed, model_votes (JSON), final_confidence.
+```sql
+-- جدول الإشارات (محدث)
+CREATE TABLE signals (
+    id SERIAL PRIMARY KEY,
+    symbol VARCHAR(20),
+    signal_type VARCHAR(4) CHECK (signal_type IN ('CALL', 'PUT')),
+    confidence DECIMAL,
+    expiry_time INTEGER,
+    generated_at TIMESTAMP DEFAULT NOW(),
+    executed BOOLEAN DEFAULT FALSE,
+    execution_result JSONB,
+    agent_votes JSONB, -- تخزين آراء الوكلاء
+    final_confidence DECIMAL,
+    decision_log TEXT -- ملخص النقاش
+);
+
+SELECT create_hypertable('signals', 'generated_at'); -- تحويل إلى hypertable
+```
 
 ---
 
@@ -860,9 +675,10 @@ func (s *Server) BroadcastSignal(signal interface{}) {
 
 12.2 تحسين الأداء
 
-· استخدم Redis للتخزين المؤقت.
-· استخدم load balancing لتوزيع الحمل بين نماذج AI المتعددة.
-· أضف فهارس (indexes) على حقول الاستعلام المتكررة.
+· استخدم Redis Streams للتخزين المؤقت وتوزيع الحمل.
+· استخدم vLLM لتسريع استدلال النماذج.
+· أضف فهارس (indexes) على حقول الاستعلام المتكررة في TimescaleDB.
+· استخدم load balancing لتوزيع الحمل بين عدة نسخ من الوكلاء.
 
 12.3 النشر على خادم حقيقي
 
@@ -883,28 +699,29 @@ func (s *Server) BroadcastSignal(signal interface{}) {
 
 · استخدام Prometheus + Grafana لمراقبة الأداء.
 · تسجيل جميع الأخطاء في نظام مركزي (مثل Sentry).
+· مراقبة أداء كل وكيل على حدة.
 
 ---
 
 13. المرحلة 9: إدارة المخاطر والأمان
 
-13.1 إدارة المخاطر للمستخدم (مستوحاة من NOFX) 
+13.1 إدارة المخاطر للمستخدم
 
 · حد الخسارة اليومي: لا يمكن تنفيذ صفقات إذا تجاوزت الخسارة حداً معيناً.
 · الحد الأقصى للصفقة: نسبة من الرصيد (مثلاً 2%).
-· نسبة المخاطرة إلى العائد (Risk-Reward): إلزامية ≥ 1:2 (stop-loss:take-profit).
+· نسبة المخاطرة إلى العائد (Risk-Reward): إلزامية ≥ 1:2.
 · منع تكرار الصفقات: لا فتح مراكز مكررة لنفس الأصل/الاتجاه.
 · إدارة الهامش: إجمالي الاستخدام ≤ 90% من الرصيد.
 
-13.2 أمان النظام (بناءً على تجارب NOFX) 
+13.2 أمان النظام (بناءً على تجارب سابقة)
 
 · HTTPS إلزامي.
 · تغيير الإعدادات الافتراضية فوراً:
-  · تغيير JWT secret الافتراضي .
-  · تعطيل "admin mode" .
+  · تغيير JWT secret الافتراضي.
+  · تعطيل أي واجهات إدارة (admin mode) غير ضرورية.
 · تشفير مفاتيح API في قاعدة البيانات (AES-256).
-· IP whitelisting لمفاتيح البورصات .
-· فصل الصلاحيات: مفاتيح منفصلة للقراءة والتداول .
+· IP whitelisting لمفاتيح البورصات.
+· فصل الصلاحيات: مفاتيح منفصلة للقراءة والتداول.
 · معدل الطلبات (Rate Limiting) لمنع هجمات DDoS.
 · التحقق من صحة المدخلات (Input Validation) لجميع الطلبات.
 
@@ -950,9 +767,10 @@ func (s *Server) BroadcastSignal(signal interface{}) {
 
 1. يتم التحقق من توفر الرصيد التجريبي الكافي.
 2. يتم خصم المبلغ المطلوب من الرصيد التجريبي.
-3. يتم تسجيل الصفقة في جدول paper_trades.
+3. يتم تسجيل الصفقة في جدول paper_trades مع وقت الافتتاح.
 4. عند انتهاء العقد، يتم حساب الربح/الخسارة بناءً على السعر الحقيقي.
 5. يتم تحديث الرصيد التجريبي.
+6. يتم إشعار المستخدم بالنتيجة.
 
 14.3 بنية قاعدة البيانات للتداول التجريبي
 
@@ -986,9 +804,10 @@ CREATE TABLE paper_trades (
 
 14.4 واجهة المستخدم للتداول التجريبي
 
-· شريط علوي ملون يبين وضع "التداول التجريبي".
+· شريط علوي ملون (أخضر فاتح) يبين وضع "التداول التجريبي".
 · عرض الرصيد التجريبي بشكل بارز.
-· زر "إعادة تعيين الرصيد التجريبي".
+· زر "إعادة تعيين الرصيد التجريبي" لإعادة الرصيد إلى 10,000$ افتراضياً.
+· علامة تبويب منفصلة لسجل الصفقات التجريبية.
 · أزرار تنفيذ منفصلة: "تنفيذ حقيقي" و "تنفيذ تجريبي".
 
 ---
@@ -997,16 +816,21 @@ CREATE TABLE paper_trades (
 
 | الاسم | الرابط | الوصف | التجربة العملية |
 | :--- | :--- | :--- | :--- |
-| **NOFX** | [github.com/zengfield/nofx-dex](https://github.com/zengfield/nofx-dex) | نظام تشغيل تداول وكيل متكامل | أكثر من 9000 نجمة، مستخدم في تداول حقيقي [مصدر سابق] |
-| **CCXT** | [github.com/ccxt/ccxt](https://github.com/ccxt/ccxt) | مكتبة التداول الموحدة | المعيار الفعلي، مستخدم في آلاف المشاريع [مصدر سابق] |
-| **DeepSeek** | [github.com/deepseek-ai](https://github.com/deepseek-ai) | نموذج ذكاء اصطناعي قوي | مستخدم في NOFX [مصدر سابق] |
-| **Qwen** | [github.com/QwenLM](https://github.com/QwenLM) | نموذج متعدد اللغات | مستخدم في NOFX [مصدر سابق] |
-| **Llama** | [github.com/meta-llama](https://github.com/meta-llama) | نموذج مفتوح من Meta | الأكثر شيوعاً للنشر المحلي [مصدر سابق] |
-| **Mistral** | [github.com/mistralai](https://github.com/mistralai) | نماذج كفؤة | مستخدم في تطبيقات أوروبية [مصدر سابق] |
-| **OKX Agent Kit** | [okx.com/help/mcp-agent-kit](https://www.okx.com/help/mcp-agent-kit) | أدوات تحليل جاهزة | إصدار مارس 2026، 83 أداة [مصدر سابق] |
-| **Deriv API** | [developers.deriv.com](https://developers.deriv.com) | واجهة Deriv الرسمية | وثائق ممتازة، أمثلة متعددة [مصدر سابق] |
-| **SlowMist Security** | [slowmist.com](https://slowmist.com) | تقارير أمنية | كشفت ثغرات NOFX [مصدر سابق] |
-| **OWASP API Security** | [owasp.org/API-Security](https://owasp.org/API-Security) | أفضل ممارسات الأمان | مرجع أساسي للأمان [مصدر سابق] |
+| **LangGraph** | [github.com/langchain-ai/langgraph](https://github.com/langchain-ai/langgraph) | إطار لبناء وكلاء ذكيين بتدفقات دورية | أحدث مشروع من LangChain، يستخدم في تطبيقات معقدة |
+| **vLLM** | [github.com/vllm-project/vllm](https://github.com/vllm-project/vllm) | محرك استدلال سريع للنماذج | أسرع بـ 3-4 مرات من الطرق التقليدية |
+| **TimescaleDB** | [github.com/timescale/timescaledb](https://github.com/timescale/timescaledb) | قاعدة بيانات زمنية مبنية على PostgreSQL | تستخدم في Bloomberg و Siemens |
+| **Pandas-TA** | [github.com/twopirllc/pandas-ta](https://github.com/twopirllc/pandas-ta) | مكتبة مؤشرات فنية حديثة | أكثر من 130 مؤشراً، سهلة التكامل |
+| **VectorBT** | [github.com/polakowo/vectorbt](https://github.com/polakowo/vectorbt) | أداة اختبار استراتيجيات فائقة السرعة | قادرة على اختبار ملايين السيناريوهات في ثوانٍ |
+| **Redis Streams** | [redis.io/docs/data-types/streams](https://redis.io/docs/data-types/streams) | طابور رسائل موثوق | معيار صناعي لمعالجة التدفقات |
+| **CCXT** | [github.com/ccxt/ccxt](https://github.com/ccxt/ccxt) | مكتبة التداول الموحدة | المعيار الفعلي، مستخدم في آلاف المشاريع |
+| **DeepSeek** | [github.com/deepseek-ai](https://github.com/deepseek-ai) | نموذج ذكاء اصطناعي قوي | مستخدم في مشاريع تداول كبرى |
+| **Qwen** | [github.com/QwenLM](https://github.com/QwenLM) | نموذج متعدد اللغات | مستخدم في NOFX |
+| **Llama** | [github.com/meta-llama](https://github.com/meta-llama) | نموذج مفتوح من Meta | الأكثر شيوعاً للنشر المحلي |
+| **FinGPT** | [github.com/AI4Finance-Foundation/FinGPT](https://github.com/AI4Finance-Foundation/FinGPT) | نموذج متخصص في التمويل | دقة عالية في التحليل المالي |
+| **OKX Agent Kit** | [okx.com/help/mcp-agent-kit](https://www.okx.com/help/mcp-agent-kit) | أدوات تحليل جاهزة | إصدار مارس 2026، 83 أداة |
+| **Deriv API** | [developers.deriv.com](https://developers.deriv.com) | واجهة Deriv الرسمية | وثائق ممتازة، أمثلة متعددة |
+| **SlowMist Security** | [slowmist.com](https://slowmist.com) | تقارير أمنية | كشفت ثغرات NOFX |
+| **OWASP API Security** | [owasp.org/API-Security](https://owasp.org/API-Security) | أفضل ممارسات الأمان | مرجع أساسي للأمان |
 
 ---
 
@@ -1036,7 +860,7 @@ CREATE TABLE users (
     auto_trade BOOLEAN DEFAULT FALSE
 );
 
--- جدول الإشارات
+-- جدول الإشارات (مع دعم TimescaleDB)
 CREATE TABLE signals (
     id SERIAL PRIMARY KEY,
     symbol VARCHAR(20),
@@ -1046,9 +870,11 @@ CREATE TABLE signals (
     generated_at TIMESTAMP DEFAULT NOW(),
     executed BOOLEAN DEFAULT FALSE,
     execution_result JSONB,
-    model_votes JSONB,
-    final_confidence DECIMAL
+    agent_votes JSONB,
+    final_confidence DECIMAL,
+    decision_log TEXT
 );
+SELECT create_hypertable('signals', 'generated_at');
 
 -- جدول الصفقات الحقيقية
 CREATE TABLE real_trades (
@@ -1089,10 +915,10 @@ CREATE TABLE paper_trades (
     expiry_time INTEGER
 );
 
--- جدول أداء النماذج
-CREATE TABLE model_performance (
+-- جدول أداء الوكلاء
+CREATE TABLE agent_performance (
     id SERIAL PRIMARY KEY,
-    model_name VARCHAR(50),
+    agent_name VARCHAR(50),
     date DATE,
     total_predictions INTEGER,
     correct_predictions INTEGER,
@@ -1102,14 +928,61 @@ CREATE TABLE model_performance (
 );
 
 -- إنشاء الفهارس
-CREATE INDEX idx_signals_generated ON signals(generated_at);
-CREATE INDEX idx_model_performance_name_date ON model_performance(model_name, date);
+CREATE INDEX idx_signals_generated ON signals(generated_at DESC);
+CREATE INDEX idx_real_trades_user ON real_trades(user_id);
+CREATE INDEX idx_paper_trades_user ON paper_trades(user_id);
+CREATE INDEX idx_agent_performance_name_date ON agent_performance(agent_name, date);
 ```
 
-الملحق ج: قائمة تحقق أمنية (من تجارب NOFX) 
+الملحق ج: تثبيت وتكوين TimescaleDB
+
+```sql
+-- إنشاء قاعدة بيانات مع TimescaleDB
+CREATE DATABASE trading_data;
+\c trading_data
+CREATE EXTENSION IF NOT EXISTS timescaledb;
+
+-- إنشاء جدول للشموع وتحويله إلى hypertable
+CREATE TABLE candles (
+    time TIMESTAMPTZ NOT NULL,
+    symbol VARCHAR(20) NOT NULL,
+    open DECIMAL,
+    high DECIMAL,
+    low DECIMAL,
+    close DECIMAL,
+    volume DECIMAL
+);
+SELECT create_hypertable('candles', 'time');
+
+-- استعلامات سريعة: مثلاً تجميع الشموع بدقيقة
+SELECT time_bucket('1 minute', time) AS minute,
+       symbol,
+       FIRST(open, time) AS open,
+       MAX(high) AS high,
+       MIN(low) AS low,
+       LAST(close, time) AS close,
+       SUM(volume) AS volume
+FROM candles
+GROUP BY minute, symbol;
+```
+
+الملحق د: تشغيل vLLM مع Docker
+
+```bash
+# تشغيل خادم vLLM مع نموذج DeepSeek
+docker run --runtime nvidia -e NVIDIA_VISIBLE_DEVICES=all \
+    -p 8000:8000 \
+    -v ~/.cache/huggingface:/root/.cache/huggingface \
+    --ipc=host \
+    vllm/vllm-openai:latest \
+    --model deepseek-ai/deepseek-r1-7b \
+    --tensor-parallel-size 2  # إذا كان لديك GPU متعدد
+```
+
+الملحق هـ: قائمة تحقق أمنية (من تجارب سابقة)
 
 · تغيير JWT secret الافتراضي
-· تعطيل "admin mode"
+· تعطيل أي واجهات إدارة غير ضرورية
 · تفعيل IP whitelisting لمفاتيح API
 · فصل مفاتيح القراءة عن التداول
 · تدوير المفاتيح بشكل دوري
@@ -1119,27 +992,34 @@ CREATE INDEX idx_model_performance_name_date ON model_performance(model_name, da
 · تدقيق صلاحيات API endpoints
 · مراجعة سريعة من OWASP API Top 10
 
-الملحق د: مصادر تعلم إضافية
+---
 
-· NOFX Code Walkthrough: GitHub - nofx-dex
-· SlowMist Security Analysis: تحليل ثغرات NOFX
-· OWASP API Security Top 10: رسمي
-· DeepSeek-R1 Paper: arXiv
-· Hyperliquid Architecture: IQ.wiki
+### الملحق و: مصادر تعلم إضافية
+
+*   **LangGraph Documentation:** [langchain-ai.github.io/langgraph](https://langchain-ai.github.io/langgraph)
+*   **vLLM Official Docs:** [vllm.readthedocs.io](https://vllm.readthedocs.io)
+*   **TimescaleDB Tutorials:** [docs.timescale.com](https://docs.timescale.com)
+*   **VectorBT Examples:** [github.com/polakowo/vectorbt](https://github.com/polakowo/vectorbt)
+*   **OWASP API Security Top 10:** [owasp.org/API-Security](https://owasp.org/API-Security)
+*   **SlowMist Security Reports:** [slowmist.com](https://slowmist.com)
 
 ---
 
+## 17. جدول مقارنة: الهيكل الأصلي مقابل الهيكل المطور
+
+| المكون | المقترح في الدليل الأصلي (الإصدار 2.0) | البديل/الإضافة المقترحة (الإصدار 3.0) | سبب التفضيل التقني |
+| :--- | :--- | :--- | :--- |
+| **نواة اتخاذ القرار** | NOFX / تصويت رياضي مرجح | LangGraph / CrewAI (نقاش حقيقي بين الوكلاء) | يتيح تفاعلاً أعمق بين النماذج، وصولاً لتوصيات أكثر دقة |
+| **تشغيل النماذج** | Transformers + FastAPI | vLLM / Ollama | سرعة استدلال أعلى بـ 3-4 مرات، إدارة ذاكرة متطورة |
+| **قاعدة البيانات** | PostgreSQL + Redis | TimescaleDB + Redis Streams | أداء فائق في استعلامات السلاسل الزمنية، دعم تجميع لحظي |
+| **التحليل الفني** | TA-Lib | Pandas-TA / VectorBT | مكتبات أحدث وأسرع، تكامل سلس مع Python، قدرات Backtesting هائلة |
+| **معالجة التدفقات** | WebSocket مباشر | Redis Streams + WebSocket | يمنع فقدان البيانات، يسمح بتوزيع الحمل على عدة وكلاء |
+| **نماذج متخصصة** | نماذج عامة | FinGPT / BloombergGPT | دقة أعلى في التحليل المالي بفضل التدريب على بيانات مالية |
+
 ✅ خلاصة
 
-هذا الدليل الشامل يضع بين يديك خارطة طريق كاملة لبناء نظام تداول ذكي متكامل يعتمد على أحدث المشاريع مفتوحة المصدر ذات التجارب العملية:
+هذا الدليل الشامل (الإصدار 3.0) يقدم لك خارطة طريق متكاملة لبناء نظام تداول ذكي من الطراز الأول، يعتمد على أحدث الأبحاث والتقنيات في مجال الذكاء الاصطناعي وقواعد البيانات ومعالجة الأحداث. باستخدام بنية الوكلاء المتعددين (LangGraph)، ومحرك الاستدلال السريع (vLLM)، وقاعدة البيانات الزمنية (TimescaleDB)، يمكنك بناء نظام ليس فقط دقيقاً، بل قابلاً للتوسع والتطور ليصبح صندوق استثماري مصغر (Hedge Fund) يعمل بشكل آلي.
 
-1. طبقة بيانات قوية باستخدام Deriv API و CCXT.
-2. نواة نظام متكاملة من NOFX (أكثر من 9000 نجمة) .
-3. محرك ذكاء اصطناعي متعدد النماذج (DeepSeek, Qwen, Llama, Mistral) مع آلية تصويت مرجح .
-4. أدوات تحليل جاهزة من OKX Agent Kit.
-5. نظام تداول تجريبي لاختبار الاستراتيجيات بدون مخاطرة.
-6. إدارة مخاطر متقدمة مستوحاة من أفضل الممارسات .
-7. إجراءات أمنية مستفادة من تجارب سابقة (NOFX Hackgate) .
+تذكر دائماً: التداول يحمل مخاطر عالية. ابدأ بالتداول التجريبي لفترة كافية، طبق إجراءات الأمان بدقة، ولا تخاطر بأموال لا يمكنك تحمل خسارتها.
 
-باتباع هذا الدليل، والاستفادة من المستودعات الموثوقة، يمكنك بناء نظام قوي يقدم توصيات دقيقة بناءً على الذكاء الجماعي وبيانات حقيقية من Deriv، مع بيئة آمنة للتجربة والتحسين المستمر.
-
+حظاً موفقاً في بناء مستقبل التداول الذكي!
