@@ -9,13 +9,13 @@ from loguru import logger
 
 # Configuration
 REDIS_URL = os.getenv("REDIS_URL", "redis://khaval_redis:6379")
-DB_URL = os.getenv("DB_URL", "postgresql://khaval_admin:khaval_password@localhost:5432/khaval_trade")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://khaval_admin:khaval_password@localhost:5432/khaval_trade")
 TRADING_MODE = os.getenv("TRADING_MODE", "PAPER") # PAPER or REAL
-DERIV_TOKEN = os.getenv("DERIV_TOKEN", "")
+DERIV_API_TOKEN = os.getenv("DERIV_API_TOKEN", "")
 
 broker = RedisBroker(REDIS_URL)
 app = FastStream(broker)
-engine = create_engine(DB_URL)
+engine = create_engine(DATABASE_URL)
 
 class ExecutionWorker:
     def __init__(self):
@@ -47,8 +47,8 @@ class ExecutionWorker:
             logger.critical("GUARDRAIL TRIGGERED: Attempted real execution in PAPER mode!")
             raise PermissionError("Safety Violation: Real trade blocked in PAPER mode.")
 
-        if not DERIV_TOKEN:
-            logger.error("DERIV_TOKEN missing for real execution")
+        if not DERIV_API_TOKEN:
+            logger.error("DERIV_API_TOKEN missing for real execution")
             return
 
         logger.warning(f"PLACING REAL ORDER: {signal['symbol']} {signal['action']}")

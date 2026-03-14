@@ -13,7 +13,7 @@ import (
 )
 
 type Client struct {
-	token      string
+	apiToken      string
 	symbols    []string
 	conn       *websocket.Conn
 	mu         sync.Mutex
@@ -23,9 +23,9 @@ type Client struct {
 	reconnect  chan struct{}
 }
 
-func NewClient(token string, symbols []string, dataChan chan models.MarketData, logger *zap.Logger) *Client {
+func NewClient(apiToken string, symbols []string, dataChan chan models.MarketData, logger *zap.Logger) *Client {
 	return &Client{
-		token:     token,
+		apiToken:     apiToken,
 		symbols:   symbols,
 		dataChan:  dataChan,
 		logger:    logger,
@@ -97,7 +97,7 @@ func (c *Client) connectAndListen() error {
 
 func (c *Client) authenticate() error {
 	authRequest := map[string]interface{}{
-		"authorize": c.token,
+		"authorize": c.apiToken,
 	}
 	return c.sendJSON(authRequest)
 }

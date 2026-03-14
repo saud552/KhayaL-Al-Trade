@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings
 
 class AgentSettings(BaseSettings):
     redis_url: str = "redis://localhost:6379"
-    db_url: str = "postgresql://khaval_admin:khaval_password@localhost:5432/khaval_trade"
+    database_url: str = "postgresql://khaval_admin:khaval_password@localhost:5432/khaval_trade"
     ollama_url: str = "http://localhost:11434/v1"
     agent_name: str = "base_agent"
 

@@ -19,8 +19,8 @@ func main() {
 	defer logger.Sync()
 
 	cfg := config.Load()
-	if cfg.DerivToken == "" {
-		logger.Fatal("DERIV_TOKEN is required")
+	if cfg.DerivAPIToken == "" {
+		logger.Fatal("DERIV_API_TOKEN is required")
 	}
 	if cfg.RedisAddr == "" {
 		cfg.RedisAddr = "localhost:6379"
@@ -33,7 +33,7 @@ func main() {
 
 	// Initialize components
 	redisProducer := redis.NewProducer(cfg.RedisAddr, logger)
-	derivClient := deriv.NewClient(cfg.DerivToken, cfg.Symbols, dataChan, logger)
+	derivClient := deriv.NewClient(cfg.DerivAPIToken, cfg.Symbols, dataChan, logger)
 
 	// Start components
 	ctx, cancel := context.WithCancel(context.Background())

@@ -1,0 +1,66 @@
+services:
+  - type: worker
+    name: khaval-ingestor
+    runtime: go
+    buildCommand: go build -o ingestor ./cmd/ingestor
+    startCommand: ./ingestor
+    envVars:
+      - key: DERIV_API_TOKEN
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: khaval-redis-streams
+          property: connectionString
+      - key: SYMBOLS
+        value: R_100,R_50,frxEURUSD
+
+  - type: worker
+    name: khaval-technical-agent
+    runtime: python
+    buildCommand: pip install -r agents/requirements.txt
+    startCommand: python -m agents.technical.technical_agent
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: khaval-trading-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: khaval-redis-streams
+          property: connectionString
+      - key: OLLAMA_URL
+        value: http://khaval-ollama:11434/v1
+
+  - type: worker
+    name: khaval-orchestrator
+    runtime: python
+    buildCommand: pip install -r agents/requirements.txt
+    startCommand: python -m agents.orchestrator.main
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: khaval-redis-streams
+          property: connectionString
+      - key: OLLAMA_URL
+        value: http://khaval-ollama:11434/v1
+
+  - type: worker
+    name: khaval-execution-worker
+    runtime: python
+    buildCommand: pip install -r agents/requirements.txt
+    startCommand: python -m agents.execution.execution_worker
+    envVars:
+      - key: TRADING_MODE
+        value: PAPER
+      - key: DATABASE_URL
+        fromDatabase:
+          name: khaval-trading-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: khaval-redis-streams
+          property: connectionString

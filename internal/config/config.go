@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	DerivToken string
+	DerivAPIToken string
 	Symbols    []string
 	RedisAddr  string
 }
@@ -22,7 +22,7 @@ func Load() *Config {
 	}
 
 	return &Config{
-		DerivToken: os.Getenv("DERIV_TOKEN"),
+		DerivAPIToken: os.Getenv("DERIV_API_TOKEN"),
 		Symbols:    strings.Split(symbolsStr, ","),
 		RedisAddr:  os.Getenv("REDIS_ADDR"),
 	}
