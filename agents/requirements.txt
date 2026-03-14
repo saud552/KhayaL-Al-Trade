@@ -1,0 +1,10 @@
+faststream[redis]
+pandas
+pandas-ta
+sqlalchemy
+psycopg2-binary
+openai
+pydantic-settings
+loguru
+langgraph
+langchain
